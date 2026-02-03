@@ -17,28 +17,46 @@ model User {
   id        String   @id @default(uuid())
   username  String   @unique
   email     String   @unique
-  password  String   // Hash bcrypt
+  password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Relations (on les remplira après)
-  // serverMemberships ServerMember[]
-  // messages          Message[]
-  // Relation inverse : un User peut posséder plusieurs Servers
-  ownedServers Server[] @relation("OwnedServers")
+  ownedServers Server[]  @relation("OwnedServers")
+  messages     Message[] @relation("UserMessages")
 }
 
 model Server {
   id        String   @id @default(uuid())
   name      String   @unique 
-  ownerId   String   // Juste un champ normal qui référence un User
+  ownerId   String
   createdAt DateTime @default(now()) 
   updatedAt DateTime @updatedAt
 
-  // Relation : ce Server appartient à un User
-  owner     User     @relation("OwnedServers", fields: [ownerId], references: [id])
+  owner    User      @relation("OwnedServers", fields: [ownerId], references: [id])
+  channels Channel[] @relation("OwnedChannels")
 }
 
 model Channel {
-  id
+  id        String   @id @default(uuid())
+  name      String   
+  serverId  String   
+  createdAt DateTime @default(now()) 
+  updatedAt DateTime @updatedAt
+
+  server   Server    @relation("OwnedChannels", fields: [serverId], references: [id])
+  messages Message[] @relation("ChannelMessages")
+
+  @@unique([serverId, name])
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  content   String
+  channelId String
+  userId    String
+  createdAt DateTime @default(now()) 
+  updatedAt DateTime @updatedAt
+
+  author  User    @relation("UserMessages", fields: [userId], references: [id])
+  channel Channel @relation("ChannelMessages", fields: [channelId], references: [id])
 }
