@@ -12,3 +12,33 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  email     String   @unique
+  password  String   // Hash bcrypt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations (on les remplira après)
+  // serverMemberships ServerMember[]
+  // messages          Message[]
+  // Relation inverse : un User peut posséder plusieurs Servers
+  ownedServers Server[] @relation("OwnedServers")
+}
+
+model Server {
+  id        String   @id @default(uuid())
+  name      String   @unique 
+  ownerId   String   // Juste un champ normal qui référence un User
+  createdAt DateTime @default(now()) 
+  updatedAt DateTime @updatedAt
+
+  // Relation : ce Server appartient à un User
+  owner     User     @relation("OwnedServers", fields: [ownerId], references: [id])
+}
+
+model Channel {
+  id
+}
