@@ -1,18 +1,25 @@
 version: '3.8'
 
 services:
+  # Base de données PostgreSQL
   postgres:
     image: postgres:15-alpine
     container_name: rtc_postgres
     environment:
-      POSTGRES_DB: rtc_chat
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: your_password
+      POSTGRES_PASSWORD: your_password_change_me
+      POSTGRES_DB: rtc_chat
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
+  # Cache Redis
   redis:
     image: redis:7-alpine
     container_name: rtc_redis
@@ -20,6 +27,11 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
 
 volumes:
   postgres_data:
