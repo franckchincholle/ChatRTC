@@ -9,17 +9,17 @@ import type { User } from '@prisma/client';
 
 // 2. Classe AuthService
 /**
- * Service gérant l'authentification des utilisateurs
- */
+* Service gérant l'authentification des utilisateurs
+*/
 export class AuthService {
 
     //    - signup()
     /**
-     * Inscrit un nouvel utilisateur
-     * @param data - Données d'inscription
-     * @returns Utilisateur créé avec tokens
-     * @throws ConflictError si l'email ou username existe déjà
-     */
+    * Inscrit un nouvel utilisateur
+    * @param data - Données d'inscription
+    * @returns Utilisateur créé avec tokens
+    * @throws ConflictError si l'email ou username existe déjà
+    */
     async signup(data: SignupData): Promise<AuthResponse> {
         // 1. Vérifier si l'email existe déjà
         const emailExists = await userRepository.emailExists(data.email);
@@ -156,3 +156,5 @@ export class AuthService {
 }
 
 // 3. Export d'une instance singleton
+
+export const authService = new AuthService();
