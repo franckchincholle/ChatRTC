@@ -16,9 +16,17 @@ export interface JwtPayload {
  * @returns Token JWT signé
  */
 export const generateAccessToken = (payload: JwtPayload): string => {
-  return jwt.sign(payload, env.JWT_SECRET, {
-    expiresIn: env.JWT_EXPIRES_IN,
-  });
+  const secret = env.JWT_SECRET;
+  
+  if (!secret) {
+    throw new Error('JWT_SECRET is not defined');
+  }
+  
+  return jwt.sign(
+    payload,
+    secret,
+    { expiresIn: env.JWT_EXPIRES_IN } as jwt.SignOptions
+  );
 };
 
 /**
@@ -27,13 +35,17 @@ export const generateAccessToken = (payload: JwtPayload): string => {
  * @returns Refresh token JWT signé
  */
 export const generateRefreshToken = (payload: JwtPayload): string => {
-  if (!env.JWT_REFRESH_SECRET) {
+  const secret = env.JWT_REFRESH_SECRET;
+  
+  if (!secret) {
     throw new Error('JWT_REFRESH_SECRET is not defined');
   }
   
-  return jwt.sign(payload, env.JWT_REFRESH_SECRET, {
-    expiresIn: env.JWT_REFRESH_EXPIRES_IN,
-  });
+  return jwt.sign(
+    payload,
+    secret,
+    { expiresIn: env.JWT_REFRESH_EXPIRES_IN } as jwt.SignOptions
+  );
 };
 
 /**
@@ -43,7 +55,13 @@ export const generateRefreshToken = (payload: JwtPayload): string => {
  * @throws Si le token est invalide ou expiré
  */
 export const verifyAccessToken = (token: string): JwtPayload => {
-  return jwt.verify(token, env.JWT_SECRET) as JwtPayload;
+  const secret = env.JWT_SECRET;
+  
+  if (!secret) {
+    throw new Error('JWT_SECRET is not defined');
+  }
+  
+  return jwt.verify(token, secret) as JwtPayload;
 };
 
 /**
@@ -53,9 +71,11 @@ export const verifyAccessToken = (token: string): JwtPayload => {
  * @throws Si le token est invalide ou expiré
  */
 export const verifyRefreshToken = (token: string): JwtPayload => {
-  if (!env.JWT_REFRESH_SECRET) {
+  const secret = env.JWT_REFRESH_SECRET;
+  
+  if (!secret) {
     throw new Error('JWT_REFRESH_SECRET is not defined');
   }
   
-  return jwt.verify(token, env.JWT_REFRESH_SECRET) as JwtPayload;
+  return jwt.verify(token, secret) as JwtPayload;
 };

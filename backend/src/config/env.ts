@@ -18,7 +18,7 @@ for (const envVar of requiredEnvVars) {
   }
 }
 
-// Export typé des variables d'env
+// Export typé des variables d'env (SANS "as const" à la fin)
 export const env = {
   // Server
   NODE_ENV: process.env.NODE_ENV || 'development',
@@ -43,4 +43,4 @@ export const env = {
   BCRYPT_ROUNDS: parseInt(process.env.BCRYPT_ROUNDS || '10'),
   RATE_LIMIT_WINDOW_MS: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'),
   RATE_LIMIT_MAX_REQUESTS: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'),
-} as const;
+};
