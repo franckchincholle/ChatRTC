@@ -1,3 +1,4 @@
+import { prisma } from "../config/database";
 import { ServerRepository } from "../repositories/server.repository";
 import { CreateServerDTO, Server, ServerMember, UpdateServerDTO } from "../types/server.types";
 
@@ -25,6 +26,16 @@ export class ServerService {
     return await this.serverRepository.removeMember(serverId, userId);
   }
 
+  async joinServer(inviteCode: string, userId: string): Promise<ServerMember> {
+    const invitation = await this.serverRepository.findInvitationByCode(inviteCode);
+    if (!invitation) {
+      throw new Error('Invalid invite code');
+    }
+    /* if (invitation.expiresAt && invitation.expiresAt < new Date()) {
+        throw new Error("Invitation code has expired");
+    } */
+    return await this.serverRepository.addMember(invitation.serverId, userId, 'MEMBER');
+  }
 }
 
 // TODO: Business logic
@@ -32,7 +43,6 @@ export class ServerService {
 // - getUserServers(userId)
 // - updateServer(serverId, userId, data)
 // - deleteServer(serverId, userId)
-// - joinServer(inviteCode, userId)
 // - generateInviteCode(serverId, userId)
 // - getServerMembers(serverId)
 // - updateMemberRole(serverId, ownerId, targetUserId, role)

@@ -95,4 +95,12 @@ export class ServerRepository {
     });
     return member as ServerMember;
   }
+
+  async findInvitationByCode(code: string) {
+    return await prisma.invitation.findUnique({
+      where: {
+        code
+      }
+    });
+  }
 }
