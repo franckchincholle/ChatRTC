@@ -2,18 +2,18 @@ import { prisma } from '../config/database';
 import { Server, ServerMember, CreateServerDTO, UpdateServerDTO } from '../types/server.types';
 
 export class ServerRepository {
-  async create(data: CreateServerDTO & { ownerId: string }): Promise<Server> {
+  async create(data: CreateServerDTO, ownerId: string): Promise<Server> {
     return await prisma.$transaction(async (tx) => {
       const newServer = await tx.server.create({
         data: {
           name: data.name,
-          ownerId: data.ownerId,
+          ownerId: ownerId,
         },
       });
       await tx.serverMember.create({
         data: {
           serverId: newServer.id,
-          userId: data.ownerId,
+          userId: ownerId,
           role: 'OWNER',
         },
       });
