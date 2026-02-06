@@ -1,6 +1,6 @@
-import { prisma } from "../config/database";
 import { ServerRepository } from "../repositories/server.repository";
 import { CreateServerDTO, Server, ServerMember, UpdateServerDTO } from "../types/server.types";
+import { randomBytes } from "crypto";
 
 export class ServerService {
   private serverRepository: ServerRepository;
@@ -35,6 +35,21 @@ export class ServerService {
         throw new Error("Invitation code has expired");
     } */
     return await this.serverRepository.addMember(invitation.serverId, userId, 'MEMBER');
+  }
+
+  async generatedInviteCode(serverId: string, userId: string): Promise<string> {
+    const server = await this.serverRepository.findById(serverId);
+    if (!server) {
+      throw new Error('Server not found');
+    }
+    if (server.ownerId !== userId) {
+      throw new Error('Only the server owner can generate invite codes');
+    }
+    const code = randomBytes(4).toString('hex');
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 1);
+    await this.serverRepository.createInvitation(serverId, code, expiresAt);
+    return code;
   }
 }
 

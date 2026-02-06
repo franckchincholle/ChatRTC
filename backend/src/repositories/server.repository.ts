@@ -103,4 +103,14 @@ export class ServerRepository {
       }
     });
   }
+
+  async createInvitation(serverId: string, code: string, expiresAt?: Date) {
+    return await prisma.invitation.create({
+      data: {
+        code,
+        serverId,
+        expiresAt,
+      }
+    })
+  }
 }
