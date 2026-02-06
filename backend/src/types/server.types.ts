@@ -11,7 +11,7 @@ export interface Server {
 export interface ServerMember {
   serverId: string;
   userId: string;
-  role: 'owner' | 'admin' | 'member';
+  role: 'OWNER' | 'ADMIN' | 'MEMBER';
   joinedAt: Date;
 }
 
@@ -25,4 +25,8 @@ export interface JoinServerDTO {
 
 export interface UpdateMemberRoleDTO {
   role: 'admin' | 'member';
+}
+
+export interface UpdateServerDTO {
+  name?: string;
 }

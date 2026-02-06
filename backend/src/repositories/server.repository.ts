@@ -1,5 +1,5 @@
 import { prisma } from '../config/database';
-import { Server, ServerMember, CreateServerDTO } from '../types/server.types';
+import { Server, ServerMember, CreateServerDTO, UpdateServerDTO } from '../types/server.types';
 
 export class ServerRepository {
   async create(data: CreateServerDTO & { ownerId: string }): Promise<Server> {
@@ -23,8 +23,10 @@ export class ServerRepository {
 
   async findById(id: string): Promise<Server | null> {
     return await prisma.server.findUnique({
-      where: { id },
-    })
+      where: {
+        id
+      },
+    });
   }
 
   async findByUserId(userId: string): Promise<Server[]> {
@@ -38,10 +40,59 @@ export class ServerRepository {
       },
     });
   }
+
+  async update(id: string, data: UpdateServerDTO): Promise<Server> {
+    return await prisma.server.update({
+      where: {
+        id
+      },
+      data,
+    });
+  }
+
+  async delete(id: string): Promise<Server> {
+    return await prisma.server.delete({
+      where: {
+        id
+      },
+    });
+  }
+
+  async addMember(serverId: string, userId: string, role: 'OWNER' | 'ADMIN' | 'MEMBER' = 'MEMBER'): Promise<ServerMember> {
+    const member = await prisma.serverMember.create({
+      data: {
+        serverId,
+        userId,
+        role
+      },
+    });
+    return member as ServerMember;
+  }
+
+  async removeMember(serverId: string, userId: string): Promise<ServerMember> {
+    const member = await prisma.serverMember.delete({
+      where: {
+        userId_serverId: {
+          serverId,
+          userId
+        },
+      },
+    });
+    return member as ServerMember;
+  }
+
+  async updateMemberRole(serverId: string, userId: string, role: 'ADMIN' | 'MEMBER'): Promise<ServerMember> {
+    const member = await prisma.serverMember.update({
+      where: {
+        userId_serverId: {
+          serverId,
+          userId
+        },
+      },
+      data: {
+        role
+      },
+    });
+    return member as ServerMember;
+  }
 }
-  // TODO: CRUD operations
-  // - update(id, data)
-  // - delete(id)
-  // - addMember(serverId, userId, role)
-  // - removeMember(serverId, userId)
-  // - updateMemberRole(serverId, userId, role)
