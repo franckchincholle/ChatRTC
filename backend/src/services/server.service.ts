@@ -105,8 +105,18 @@ export class ServerService {
     }
     return await this.serverRepository.updateMemberRole(serverId, targetUserId, role);
   }
+
+  async updateServer(serverId: string, userId: string, data: UpdateServerDTO): Promise<Server> {
+    const server = await this.serverRepository.findById(serverId);
+    if (!server) {
+      throw new Error('Server not found');
+    }
+    if (server.ownerId !== userId) {
+      throw new Error('Only the server owner can update server details');
+    }
+    return await this.serverRepository.update(serverId, data);
+  }
 }
 
 // TODO: Business logic
-// - updateServer(serverId, userId, data)
 // - deleteServer(serverId, userId)

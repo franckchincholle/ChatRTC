@@ -46,7 +46,9 @@ export class ServerRepository {
       where: {
         id
       },
-      data,
+      data: {
+        name: data.name,
+      }
     });
   }
 
