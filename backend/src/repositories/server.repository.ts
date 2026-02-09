@@ -1,3 +1,4 @@
+import { PrismaClient } from '@prisma/client';
 import { prisma } from '../config/database';
 import { Server, ServerMember, CreateServerDTO, UpdateServerDTO } from '../types/server.types';
 
@@ -124,5 +125,17 @@ export class ServerRepository {
       },
     });
     return member as ServerMember | null;
+  }
+
+  async findAllMembersByServerId(serverId: string): Promise<ServerMember[]> {
+    const members = await prisma.serverMember.findMany({
+      where: {
+        serverId,
+      },
+      orderBy: {
+        joinedAt: 'asc',
+      },
+    });
+    return members as ServerMember[];
   }
 }

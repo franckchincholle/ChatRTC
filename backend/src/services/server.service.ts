@@ -52,6 +52,27 @@ export class ServerService {
     await this.serverRepository.createInvitation(serverId, code, expiresAt);
     return code;
   }
+
+  async getUserServers(userId: string): Promise<Server[]> {
+    return await this.serverRepository.findByUserId(userId);
+  }
+
+  async getServerById(serverId: string, userId: string): Promise<Server> {
+    const member = await this.serverRepository.findMember(serverId, userId);
+    if (!member) {
+      throw new Error('You are not a member of this server');
+    }
+    const server = await this.serverRepository.findById(serverId);
+    if (!server) {
+      throw new Error('Server not found');
+    }
+    return server;
+  }
+
+  async getServerMembers(serverId: string): Promise<ServerMember[]> {
+    return await this.serverRepository.findAllMembersByServerId(serverId);
+  }
+
 }
 
 // TODO: Business logic
