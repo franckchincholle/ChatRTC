@@ -87,9 +87,26 @@ export class ServerService {
     }
     return await this.serverRepository.transferOwnership(serverId, currentOwnerId, newOwnerId);
   }
+
+  async updateMemberRole(serverId: string, adminId: string, targetUserId: string, role: 'ADMIN' | 'MEMBER'): Promise<ServerMember> {
+    const requester = await this.serverRepository.findMember(serverId, adminId);
+    if (!requester || (requester.role !== 'OWNER' && requester.role !== 'ADMIN')) {
+      throw new Error('You do not have permission to update member roles');
+    }
+    const targetMember = await this.serverRepository.findMember(serverId, targetUserId);
+    if (!targetMember) {
+      throw new Error('Target user is not on the server');
+    }
+    if (targetMember.role === 'OWNER') {
+      throw new Error('Cannot change role of the server owner');
+    }
+    if (requester.role === 'ADMIN' && targetMember.role === 'ADMIN') {
+      throw new Error('Admins cannot change roles of other admins');
+    }
+    return await this.serverRepository.updateMemberRole(serverId, targetUserId, role);
+  }
 }
 
 // TODO: Business logic
 // - updateServer(serverId, userId, data)
 // - deleteServer(serverId, userId)
-// - updateMemberRole(serverId, ownerId, targetUserId, role)

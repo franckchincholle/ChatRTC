@@ -1,4 +1,3 @@
-import { PrismaClient } from '@prisma/client';
 import { prisma } from '../config/database';
 import { Server, ServerMember, CreateServerDTO, UpdateServerDTO } from '../types/server.types';
 
