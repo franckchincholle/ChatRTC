@@ -1,7 +1,7 @@
 import { channelRepository } from '../repositories/channel.repository';
+import { serverMemberRepository } from '../repositories/server-member.repository';
 import { BadRequestError, NotFoundError, ForbiddenError } from '../utils/errors';
 import type { CreateChannelData, UpdateChannelData, ChannelResponse } from '../types/channel.types';
-import { prisma } from '../config/database';
 
 /**
  * Service gérant les channels
@@ -12,23 +12,9 @@ export class ChannelService {
    * @throws ForbiddenError si l'utilisateur n'a pas les permissions
    */
   private async checkAdminOrOwnerPermission(userId: string, serverId: string): Promise<void> {
-    // Récupérer le membre du serveur
-    const member = await prisma.serverMember.findUnique({
-      where: {
-        userId_serverId: {
-          userId,
-          serverId,
-        },
-      },
-    });
-
-    // Si l'utilisateur n'est pas membre du serveur
-    if (!member) {
-      throw new ForbiddenError('Vous n\'êtes pas membre de ce serveur');
-    }
-
-    // Si l'utilisateur n'est ni Admin ni Owner
-    if (member.role !== 'ADMIN' && member.role !== 'OWNER') {
+    const isAdminOrOwner = await serverMemberRepository.isAdminOrOwner(userId, serverId);
+    
+    if (!isAdminOrOwner) {
       throw new ForbiddenError('Vous n\'avez pas les permissions pour effectuer cette action');
     }
   }
@@ -38,16 +24,9 @@ export class ChannelService {
    * @throws ForbiddenError si l'utilisateur n'est pas membre
    */
   private async checkMemberPermission(userId: string, serverId: string): Promise<void> {
-    const member = await prisma.serverMember.findUnique({
-      where: {
-        userId_serverId: {
-          userId,
-          serverId,
-        },
-      },
-    });
-
-    if (!member) {
+    const isMember = await serverMemberRepository.isMember(userId, serverId);
+    
+    if (!isMember) {
       throw new ForbiddenError('Vous n\'êtes pas membre de ce serveur');
     }
   }
@@ -62,38 +41,33 @@ export class ChannelService {
    */
   async createChannel(userId: string, data: CreateChannelData): Promise<ChannelResponse> {
     // 1. Vérifier les permissions (Admin ou Owner)
+    // Cette vérification implique que le serveur existe
     await this.checkAdminOrOwnerPermission(userId, data.serverId);
 
-    // 2. Vérifier que le serveur existe
-    const server = await prisma.server.findUnique({
-      where: { id: data.serverId },
-    });
+    // 2. Créer le channel directement
+    // La contrainte unique @@unique([serverId, name]) en base garantit l'unicité
+    try {
+      const channel = await channelRepository.createChannel({
+        name: data.name,
+        serverId: data.serverId,
+      });
 
-    if (!server) {
-      throw new NotFoundError('Serveur introuvable');
+      // 3. Retourner la réponse
+      return {
+        id: channel.id,
+        name: channel.name,
+        serverId: channel.serverId,
+        createdAt: channel.createdAt,
+        updatedAt: channel.updatedAt,
+      };
+    } catch (error: any) {
+      // Gérer l'erreur de contrainte unique Prisma
+      if (error.code === 'P2002') {
+        throw new BadRequestError('Un channel avec ce nom existe déjà dans ce serveur');
+      }
+      // Autre erreur Prisma ou erreur inattendue
+      throw error;
     }
-
-    // 3. Vérifier qu'un channel avec ce nom n'existe pas déjà dans ce serveur
-    const nameExists = await channelRepository.existsInServer(data.serverId, data.name);
-    
-    if (nameExists) {
-      throw new BadRequestError('Un channel avec ce nom existe déjà dans ce serveur');
-    }
-
-    // 4. Créer le channel
-    const channel = await channelRepository.createChannel({
-      name: data.name,
-      serverId: data.serverId,
-    });
-
-    // 5. Retourner la réponse
-    return {
-      id: channel.id,
-      name: channel.name,
-      serverId: channel.serverId,
-      createdAt: channel.createdAt,
-      updatedAt: channel.updatedAt,
-    };
   }
 
   /**
@@ -174,28 +148,28 @@ export class ChannelService {
     // 2. Vérifier les permissions (Admin ou Owner)
     await this.checkAdminOrOwnerPermission(userId, channel.serverId);
 
-    // 3. Si on change le nom, vérifier qu'il n'existe pas déjà
-    if (data.name && data.name !== channel.name) {
-      const nameExists = await channelRepository.existsInServer(channel.serverId, data.name);
-      
-      if (nameExists) {
+    // 3. Mettre à jour le channel
+    // La contrainte unique gère automatiquement les doublons
+    try {
+      const updatedChannel = await channelRepository.updateChannel(channelId, {
+        name: data.name,
+      });
+
+      // 4. Retourner le channel mis à jour
+      return {
+        id: updatedChannel.id,
+        name: updatedChannel.name,
+        serverId: updatedChannel.serverId,
+        createdAt: updatedChannel.createdAt,
+        updatedAt: updatedChannel.updatedAt,
+      };
+    } catch (error: any) {
+      // Gérer l'erreur de contrainte unique Prisma
+      if (error.code === 'P2002') {
         throw new BadRequestError('Un channel avec ce nom existe déjà dans ce serveur');
       }
+      throw error;
     }
-
-    // 4. Mettre à jour le channel
-    const updatedChannel = await channelRepository.updateChannel(channelId, {
-      name: data.name,
-    });
-
-    // 5. Retourner le channel mis à jour
-    return {
-      id: updatedChannel.id,
-      name: updatedChannel.name,
-      serverId: updatedChannel.serverId,
-      createdAt: updatedChannel.createdAt,
-      updatedAt: updatedChannel.updatedAt,
-    };
   }
 
   /**
