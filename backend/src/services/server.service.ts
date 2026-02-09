@@ -38,12 +38,13 @@ export class ServerService {
   }
 
   async generatedInviteCode(serverId: string, userId: string): Promise<string> {
-    const server = await this.serverRepository.findById(serverId);
-    if (!server) {
-      throw new Error('Server not found');
+    const member = await this.serverRepository.findMember(serverId, userId);
+    if (!member) {
+      throw new Error('You are not a member of this server');
     }
-    if (server.ownerId !== userId) {
-      throw new Error('Only the server owner can generate invite codes');
+    const authorizedRoles = ['OWNER', 'ADMIN'];
+    if (!authorizedRoles.includes(member.role)) {
+      throw new Error('You do not have permission to generate invite codes');
     }
     const code = randomBytes(4).toString('hex');
     const expiresAt = new Date();
@@ -58,7 +59,6 @@ export class ServerService {
 // - getUserServers(userId)
 // - updateServer(serverId, userId, data)
 // - deleteServer(serverId, userId)
-// - generateInviteCode(serverId, userId)
 // - getServerMembers(serverId)
 // - updateMemberRole(serverId, ownerId, targetUserId, role)
 // - transferOwnership(serverId, ownerId, newOwnerId)

@@ -113,4 +113,16 @@ export class ServerRepository {
       }
     })
   }
+
+  async findMember(serverId: string, userId: string): Promise<ServerMember | null> {
+    const member = await prisma.serverMember.findUnique({
+      where: {
+        userId_serverId: {
+          userId,
+          serverId
+        },
+      },
+    });
+    return member as ServerMember | null;
+  }
 }
