@@ -73,13 +73,23 @@ export class ServerService {
     return await this.serverRepository.findAllMembersByServerId(serverId);
   }
 
+  async transferOwnership(serverId: string, currentOwnerId: string, newOwnerId: string): Promise<void> {
+    const server = await this.serverRepository.findById(serverId);
+    if (!server) {
+      throw new Error('Server not found');
+    }
+    if (server.ownerId !== currentOwnerId) {
+      throw new Error('Only the current owner can transfer ownership');
+    }
+    const newOwnerMember = await this.serverRepository.findMember(serverId, newOwnerId);
+    if (!newOwnerMember) {
+      throw new Error('New owner must be on the server');
+    }
+    return await this.serverRepository.transferOwnership(serverId, currentOwnerId, newOwnerId);
+  }
 }
 
 // TODO: Business logic
-// - getServerById(serverId, userId)
-// - getUserServers(userId)
 // - updateServer(serverId, userId, data)
 // - deleteServer(serverId, userId)
-// - getServerMembers(serverId)
 // - updateMemberRole(serverId, ownerId, targetUserId, role)
-// - transferOwnership(serverId, ownerId, newOwnerId)

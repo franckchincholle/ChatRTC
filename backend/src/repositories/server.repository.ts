@@ -138,4 +138,39 @@ export class ServerRepository {
     });
     return members as ServerMember[];
   }
+
+  async transferOwnership(serverId: string, oldOwnerId: string, newOwnerId: string): Promise<void> {
+    await prisma.$transaction([
+      prisma.server.update({
+        where: {
+          id: serverId
+        },
+        data: {
+          ownerId: newOwnerId
+        },
+      }),
+      prisma.serverMember.update({
+        where: {
+          userId_serverId: {
+            userId: oldOwnerId,
+            serverId
+          },
+        },
+        data: {
+          role: 'MEMBER'
+        }
+      }),
+      prisma.serverMember.update({
+        where: {
+          userId_serverId: {
+            userId: newOwnerId,
+            serverId
+          },
+        },
+        data: {
+          role: 'OWNER'
+        },
+      })
+    ]);
+  }
 }
