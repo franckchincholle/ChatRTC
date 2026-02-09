@@ -116,7 +116,15 @@ export class ServerService {
     }
     return await this.serverRepository.update(serverId, data);
   }
-}
 
-// TODO: Business logic
-// - deleteServer(serverId, userId)
+  async deleteServer(serverId: string, userId: string): Promise<Server> {
+    const server = await this.serverRepository.findById(serverId);
+    if (!server) {
+      throw new Error('Server not found');
+    }
+    if (server.ownerId !== userId) {
+      throw new Error('Only the server owner can delete the server');
+    }
+    return await this.serverRepository.delete(serverId);
+  }
+}
