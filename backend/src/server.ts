@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { env } from './config/env';
+import serverRoutes from './routes/server.routes';
 import { prisma } from './config/database';
 import { redis } from './config/redis';
 import { errorHandler } from './middlewares/error.middleware';
@@ -37,6 +38,7 @@ app.use(cors({
  */
 app.use(express.json()); // Parse application/json
 app.use(express.urlencoded({ extended: true })); // Parse application/x-www-form-urlencoded
+app.use('/api/servers', serverRoutes);
 
 // ============================================
 // ROUTES
