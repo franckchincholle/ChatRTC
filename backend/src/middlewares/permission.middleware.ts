@@ -1,10 +1,11 @@
 import { Response, NextFunction } from 'express';
 import { serverMemberRepository } from '../repositories/server-member.repository';
+import { ServerIdParams } from "../types/server.types";
 import { AuthenticatedRequest } from './auth.middleware';
 import { ForbiddenError } from '../utils/errors';
 
 
-export const requireOwner = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+export const requireOwner = async (req: AuthenticatedRequest<ServerIdParams>, res: Response, next: NextFunction): Promise<void> => {
   try {
     const serverId = req.params.id;
     const userId = req.user.id;
@@ -21,7 +22,7 @@ export const requireOwner = async (req: AuthenticatedRequest, res: Response, nex
   }
 };
 
-export const requireAdmin = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+export const requireAdmin = async (req: AuthenticatedRequest<ServerIdParams>, res: Response, next: NextFunction): Promise<void> => {
   try {
     const serverId = req.params.id;
     const userId = req.user.id;
@@ -38,7 +39,7 @@ export const requireAdmin = async (req: AuthenticatedRequest, res: Response, nex
   }
 };
 
-export const requireMember = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+export const requireMember = async (req: AuthenticatedRequest<ServerIdParams>, res: Response, next: NextFunction): Promise<void> => {
   try {
     const serverId = req.params.id;
     const userId = req.user.id;
