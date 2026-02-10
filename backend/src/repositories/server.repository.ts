@@ -75,8 +75,8 @@ export class ServerRepository {
     const member = await prisma.serverMember.delete({
       where: {
         userId_serverId: {
-          serverId,
-          userId
+          userId,
+          serverId
         },
       },
     });
@@ -87,8 +87,8 @@ export class ServerRepository {
     const member = await prisma.serverMember.update({
       where: {
         userId_serverId: {
-          serverId,
-          userId
+          userId,
+          serverId
         },
       },
       data: {

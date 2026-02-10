@@ -33,7 +33,7 @@ export class ServerService {
   async joinServer(inviteCode: string, userId: string): Promise<ServerMember> {
     const invitation = await this.serverRepository.findInvitationByCode(inviteCode);
     if (!invitation) {
-      throw new Error('Invalid invite code');
+      throw new BadRequestError('Invalid invite code');
     }
     /* if (invitation.expiresAt && invitation.expiresAt < new Date()) {
         throw new Error("Invitation code has expired");

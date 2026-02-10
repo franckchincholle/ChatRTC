@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { ServerController } from '../controllers/server.controller';
-import { authenticate } from '../middlewares/auth.middleware';
+import { authenticate, AuthenticatedRequest } from '../middlewares/auth.middleware';
 import { validate } from '../middlewares/validate.middleware';
 import { createServerValidation, joinServerValidation, updateMemberRoleValidation, updateServerValidation } from '../validators/server.validator';
 
@@ -14,7 +14,7 @@ router.use(authenticate);
 // server routes
 
 // create server
-router.post('/', createServerValidation, validate, (req, res, next) => serverController.createServer(req as any, res, next));
+router.post('/', createServerValidation, validate, (req, res, next) => serverController.createServer(req as AuthenticatedRequest, res, next));
 // get user servers
 router.get('/', (req, res, next) => serverController.getUserServers(req as any, res, next));
 // join server
