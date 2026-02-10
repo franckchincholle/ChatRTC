@@ -8,6 +8,7 @@ import { errorHandler } from './middlewares/error.middleware';
 
 // Import des routes
 import authRoutes from './routes/auth.routes';
+import channelRoutes from './routes/channel.routes';
 
 /**
  * Initialisation de l'application Express
@@ -61,7 +62,8 @@ app.use('/auth', authRoutes);
 
 // TODO: Ajouter d'autres routes ici plus tard
 // app.use('/servers', serverRoutes);
-// app.use('/channels', channelRoutes);
+// Routes de channels
+app.use('/', channelRoutes);
 // app.use('/messages', messageRoutes);
 
 /**
