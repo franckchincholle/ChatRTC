@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { ParamsDictionary } from 'express-serve-static-core';
 import { verifyAccessToken } from '../utils/jwt';
 import { UnauthorizedError } from '../utils/errors';
 import { userRepository } from '../repositories/user.repository';
@@ -7,7 +8,7 @@ import { userRepository } from '../repositories/user.repository';
  * Interface pour étendre le type Request d'Express
  * Permet d'ajouter la propriété "user" à req
  */
-export interface AuthenticatedRequest extends Request {
+export interface AuthenticatedRequest<P = ParamsDictionary> extends Request<P> {
   user: {
     id: string;
     username: string;

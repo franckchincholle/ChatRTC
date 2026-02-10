@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { ServerController } from '../controllers/server.controller';
 import { authenticate } from '../middlewares/auth.middleware';
-import { validate } from '../middlewares/validation.middleware';
+import { validate } from '../middlewares/validate.middleware';
 import { createServerValidation, joinServerValidation, updateMemberRoleValidation, updateServerValidation } from '../validators/server.validator';
 
 const router = Router();

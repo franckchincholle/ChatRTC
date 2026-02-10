@@ -1,5 +1,6 @@
 import { ServerRepository } from "../repositories/server.repository";
 import { serverMemberRepository } from '../repositories/server-member.repository';
+import { NotFoundError, ForbiddenError, BadRequestError } from '../utils/errors';
 import { CreateServerDTO, Server, ServerMember, UpdateServerDTO } from "../types/server.types";
 import { randomBytes } from "crypto";
 
@@ -19,20 +20,20 @@ export class ServerService {
   async leaveServer(serverId: string, userId: string): Promise<ServerMember> {
     const server = await this.serverRepository.findById(serverId);
     if (!server) {
-      throw new Error('Server not found');
+      throw new NotFoundError('Server not found');
     }
 
     if (server.ownerId === userId) {
       throw new Error('Owner cannot leave the server. Transfer ownership or delete the server.');
     }
 
-    return await serverMemberRepository.removeMember(serverId, userId);
+    return await serverMemberRepository.removeMember(userId, serverId);
   }
 
   async joinServer(inviteCode: string, userId: string): Promise<ServerMember> {
     const invitation = await this.serverRepository.findInvitationByCode(inviteCode);
     if (!invitation) {
-      throw new Error('Invalid invite code');
+      throw new BadRequestError('Invalid invite code');
     }
     /* if (invitation.expiresAt && invitation.expiresAt < new Date()) {
         throw new Error("Invitation code has expired");
@@ -41,7 +42,7 @@ export class ServerService {
   }
 
   async generatedInviteCode(serverId: string, userId: string): Promise<string> {
-    const member = await this.serverRepository.findMember(serverId, userId);
+    const member = await serverMemberRepository.findByUserAndServer(userId, serverId);
     if (!member) {
       throw new Error('You are not a member of this server');
     }
@@ -61,13 +62,13 @@ export class ServerService {
   }
 
   async getServerById(serverId: string, userId: string): Promise<Server> {
-    const member = await this.serverRepository.findMember(serverId, userId);
+    const member = await serverMemberRepository.findByUserAndServer(userId, serverId);
     if (!member) {
       throw new Error('You are not a member of this server');
     }
     const server = await this.serverRepository.findById(serverId);
     if (!server) {
-      throw new Error('Server not found');
+      throw new NotFoundError('Server not found');
     }
     return server;
   }
@@ -84,7 +85,7 @@ export class ServerService {
     if (server.ownerId !== currentOwnerId) {
       throw new Error('Only the current owner can transfer ownership');
     }
-    const newOwnerMember = await this.serverRepository.findMember(serverId, newOwnerId);
+    const newOwnerMember = await serverMemberRepository.findByUserAndServer(newOwnerId, serverId);
     if (!newOwnerMember) {
       throw new Error('New owner must be on the server');
     }
@@ -92,11 +93,11 @@ export class ServerService {
   }
 
   async updateMemberRole(serverId: string, adminId: string, targetUserId: string, role: 'ADMIN' | 'MEMBER'): Promise<ServerMember> {
-    const requester = await this.serverRepository.findMember(serverId, adminId);
+    const requester = await serverMemberRepository.findByUserAndServer(adminId, serverId);
     if (!requester || (requester.role !== 'OWNER' && requester.role !== 'ADMIN')) {
       throw new Error('You do not have permission to update member roles');
     }
-    const targetMember = await this.serverRepository.findMember(serverId, targetUserId);
+    const targetMember = await serverMemberRepository.findByUserAndServer(targetUserId, serverId);
     if (!targetMember) {
       throw new Error('Target user is not on the server');
     }
@@ -106,13 +107,13 @@ export class ServerService {
     if (requester.role === 'ADMIN' && targetMember.role === 'ADMIN') {
       throw new Error('Admins cannot change roles of other admins');
     }
-    return await this.serverRepository.updateMemberRole(serverId, targetUserId, role);
+    return await serverMemberRepository.updateRole(targetUserId, serverId, role);
   }
 
   async updateServer(serverId: string, userId: string, data: UpdateServerDTO): Promise<Server> {
     const server = await this.serverRepository.findById(serverId);
     if (!server) {
-      throw new Error('Server not found');
+      throw new NotFoundError('Server not found');
     }
     if (server.ownerId !== userId) {
       throw new Error('Only the server owner can update server details');
@@ -123,7 +124,7 @@ export class ServerService {
   async deleteServer(serverId: string, userId: string): Promise<Server> {
     const server = await this.serverRepository.findById(serverId);
     if (!server) {
-      throw new Error('Server not found');
+      throw new NotFoundError('Server not found');
     }
     if (server.ownerId !== userId) {
       throw new Error('Only the server owner can delete the server');
