@@ -1,4 +1,15 @@
 // Server types
+
+// Types pour les params
+export interface ServerIdParams {
+  id: string;
+}
+
+export interface ServerMemberParams {
+  id: string;
+  userId: string;
+}
+
 export interface Server {
   id: string;
   name: string;
