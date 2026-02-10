@@ -17,7 +17,7 @@ export class ChannelController {
       const userId = (req as AuthenticatedRequest).user.id;
 
       // 2. Récupérer le serverId depuis l'URL
-      const { serverId } = req.params;
+      const { serverId } = req.params as { serverId: string };
 
       // 3. Récupérer les données du body (déjà validées)
       const channelData: CreateChannelData = {
@@ -49,7 +49,7 @@ export class ChannelController {
       const userId = (req as AuthenticatedRequest).user.id;
 
       // 2. Récupérer le serverId depuis l'URL
-      const { serverId } = req.params;
+      const { serverId } = req.params as { serverId: string };
 
       // 3. Appeler le service
       const channels = await channelService.getChannelsByServerId(userId, serverId);
@@ -75,7 +75,7 @@ export class ChannelController {
       const userId = (req as AuthenticatedRequest).user.id;
 
       // 2. Récupérer l'ID du channel depuis l'URL
-      const { id } = req.params;
+      const { id } = req.params as { id: string };
 
       // 3. Appeler le service
       const channel = await channelService.getChannelById(userId, id);
@@ -101,7 +101,7 @@ export class ChannelController {
       const userId = (req as AuthenticatedRequest).user.id;
 
       // 2. Récupérer l'ID du channel depuis l'URL
-      const { id } = req.params;
+      const { id } = req.params as { id: string };
 
       // 3. Récupérer les données du body (déjà validées)
       const updateData: UpdateChannelData = {
@@ -132,7 +132,7 @@ export class ChannelController {
       const userId = (req as AuthenticatedRequest).user.id;
 
       // 2. Récupérer l'ID du channel depuis l'URL
-      const { id } = req.params;
+      const { id } = req.params as { id: string };
 
       // 3. Appeler le service
       await channelService.deleteChannel(userId, id);
