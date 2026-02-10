@@ -14,33 +14,33 @@ router.use(authenticate);
 // server routes
 
 // create server
-router.post('/', createServerValidation, validate, serverController.createServer);
+router.post('/', createServerValidation, validate, (req, res, next) => serverController.createServer(req as any, res, next));
 // get user servers
-router.get('/', serverController.getUserServers);
+router.get('/', (req, res, next) => serverController.getUserServers(req as any, res, next));
 // join server
-router.post('/join', joinServerValidation, validate, serverController.joinServerWithCode);
+router.post('/join', joinServerValidation, validate, (req, res, next) => serverController.joinServerWithCode(req as any, res, next));
 
 
 // actions on specific server
 
 // get server by id
-router.get('/:id', serverController.getServerById);
+router.get('/:id', (req, res, next) => serverController.getServerById(req as any, res, next));
 // update server
-router.put('/:id', updateServerValidation, validate, serverController.updateServer);
+router.put('/:id', updateServerValidation, validate, (req, res, next) => serverController.updateServer(req as any, res, next));
 // delete server
-router.delete('/:id', serverController.deleteServer);
+router.delete('/:id', (req, res, next) => serverController.deleteServer(req as any, res, next));
 
 
 // server member management
 
 // list members
-router.get('/:id/members', serverController.getServerMembers);
+router.get('/:id/members', (req, res, next) => serverController.getServerMembers(req as any, res, next));
 // leave server
-router.delete('/:id/leave', serverController.leaveServer);
+router.delete('/:id/leave', (req, res, next) => serverController.leaveServer(req as any, res, next));
 // generate invite code
-router.post('/:id/invite', serverController.generateInviteCode);
+router.post('/:id/invite', (req, res, next) => serverController.generateInviteCode(req as any, res, next));
 // update member role
-router.put('/:id/members/:userId', updateMemberRoleValidation, validate, serverController.updateMemberRole);
+router.put('/:id/members/:userId', updateMemberRoleValidation, validate, (req, res, next) => serverController.updateMemberRole(req as any, res, next));
 
 
 export default router;

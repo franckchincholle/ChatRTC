@@ -1,5 +1,6 @@
 import { ServerRepository } from "../repositories/server.repository";
 import { serverMemberRepository } from '../repositories/server-member.repository';
+import { NotFoundError, ForbiddenError, BadRequestError } from '../utils/errors';
 import { CreateServerDTO, Server, ServerMember, UpdateServerDTO } from "../types/server.types";
 import { randomBytes } from "crypto";
 
@@ -19,7 +20,7 @@ export class ServerService {
   async leaveServer(serverId: string, userId: string): Promise<ServerMember> {
     const server = await this.serverRepository.findById(serverId);
     if (!server) {
-      throw new Error('Server not found');
+      throw new NotFoundError('Server not found');
     }
 
     if (server.ownerId === userId) {
@@ -67,7 +68,7 @@ export class ServerService {
     }
     const server = await this.serverRepository.findById(serverId);
     if (!server) {
-      throw new Error('Server not found');
+      throw new NotFoundError('Server not found');
     }
     return server;
   }
@@ -112,7 +113,7 @@ export class ServerService {
   async updateServer(serverId: string, userId: string, data: UpdateServerDTO): Promise<Server> {
     const server = await this.serverRepository.findById(serverId);
     if (!server) {
-      throw new Error('Server not found');
+      throw new NotFoundError('Server not found');
     }
     if (server.ownerId !== userId) {
       throw new Error('Only the server owner can update server details');
@@ -123,7 +124,7 @@ export class ServerService {
   async deleteServer(serverId: string, userId: string): Promise<Server> {
     const server = await this.serverRepository.findById(serverId);
     if (!server) {
-      throw new Error('Server not found');
+      throw new NotFoundError('Server not found');
     }
     if (server.ownerId !== userId) {
       throw new Error('Only the server owner can delete the server');
