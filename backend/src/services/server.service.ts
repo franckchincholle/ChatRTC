@@ -1,4 +1,5 @@
 import { ServerRepository } from "../repositories/server.repository";
+import { serverMemberRepository } from '../repositories/server-member.repository';
 import { CreateServerDTO, Server, ServerMember, UpdateServerDTO } from "../types/server.types";
 import { randomBytes } from "crypto";
 
@@ -10,7 +11,9 @@ export class ServerService {
   }
 
   async createServer(ownerId: string, data: CreateServerDTO): Promise<Server> {
-    return await this.serverRepository.create(data, ownerId);
+    const server = await this.serverRepository.create(data, ownerId);
+    await serverMemberRepository.addMember(ownerId, server.id, 'OWNER');
+    return server;
   }
 
   async leaveServer(serverId: string, userId: string): Promise<ServerMember> {
@@ -23,7 +26,7 @@ export class ServerService {
       throw new Error('Owner cannot leave the server. Transfer ownership or delete the server.');
     }
 
-    return await this.serverRepository.removeMember(serverId, userId);
+    return await serverMemberRepository.removeMember(serverId, userId);
   }
 
   async joinServer(inviteCode: string, userId: string): Promise<ServerMember> {
@@ -34,7 +37,7 @@ export class ServerService {
     /* if (invitation.expiresAt && invitation.expiresAt < new Date()) {
         throw new Error("Invitation code has expired");
     } */
-    return await this.serverRepository.addMember(invitation.serverId, userId, 'MEMBER');
+    return await serverMemberRepository.addMember(userId, invitation.serverId, 'MEMBER');
   }
 
   async generatedInviteCode(serverId: string, userId: string): Promise<string> {
@@ -70,7 +73,7 @@ export class ServerService {
   }
 
   async getServerMembers(serverId: string): Promise<ServerMember[]> {
-    return await this.serverRepository.findAllMembersByServerId(serverId);
+    return await serverMemberRepository.findByServerId(serverId);
   }
 
   async transferOwnership(serverId: string, currentOwnerId: string, newOwnerId: string): Promise<void> {
