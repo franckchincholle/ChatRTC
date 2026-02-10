@@ -42,7 +42,7 @@ export class ServerService {
   }
 
   async generatedInviteCode(serverId: string, userId: string): Promise<string> {
-    const member = await this.serverRepository.findMember(serverId, userId);
+    const member = await serverMemberRepository.findByUserAndServer(userId, serverId);
     if (!member) {
       throw new Error('You are not a member of this server');
     }
@@ -62,7 +62,7 @@ export class ServerService {
   }
 
   async getServerById(serverId: string, userId: string): Promise<Server> {
-    const member = await this.serverRepository.findMember(serverId, userId);
+    const member = await serverMemberRepository.findByUserAndServer(userId, serverId);
     if (!member) {
       throw new Error('You are not a member of this server');
     }
@@ -85,7 +85,7 @@ export class ServerService {
     if (server.ownerId !== currentOwnerId) {
       throw new Error('Only the current owner can transfer ownership');
     }
-    const newOwnerMember = await this.serverRepository.findMember(serverId, newOwnerId);
+    const newOwnerMember = await serverMemberRepository.findByUserAndServer(newOwnerId, serverId);
     if (!newOwnerMember) {
       throw new Error('New owner must be on the server');
     }
@@ -93,11 +93,11 @@ export class ServerService {
   }
 
   async updateMemberRole(serverId: string, adminId: string, targetUserId: string, role: 'ADMIN' | 'MEMBER'): Promise<ServerMember> {
-    const requester = await this.serverRepository.findMember(serverId, adminId);
+    const requester = await serverMemberRepository.findByUserAndServer(adminId, serverId);
     if (!requester || (requester.role !== 'OWNER' && requester.role !== 'ADMIN')) {
       throw new Error('You do not have permission to update member roles');
     }
-    const targetMember = await this.serverRepository.findMember(serverId, targetUserId);
+    const targetMember = await serverMemberRepository.findByUserAndServer(targetUserId, serverId);
     if (!targetMember) {
       throw new Error('Target user is not on the server');
     }
@@ -107,7 +107,7 @@ export class ServerService {
     if (requester.role === 'ADMIN' && targetMember.role === 'ADMIN') {
       throw new Error('Admins cannot change roles of other admins');
     }
-    return await this.serverRepository.updateMemberRole(serverId, targetUserId, role);
+    return await serverMemberRepository.updateRole(targetUserId, serverId, role);
   }
 
   async updateServer(serverId: string, userId: string, data: UpdateServerDTO): Promise<Server> {
