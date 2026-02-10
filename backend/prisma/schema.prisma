@@ -11,6 +11,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -65,8 +66,8 @@ model Message {
   updatedAt DateTime @updatedAt
 
   // Relations
-  author  User    @relation("UserMessages", fields: [userId], references: [id])
-  channel Channel @relation("ChannelMessages", fields: [channelId], references: [id])
+  author  User    @relation("UserMessages", fields: [userId], references: [id], onDelete: Cascade)
+  channel Channel @relation("ChannelMessages", fields: [channelId], references: [id], onDelete: Cascade)
 }
 
 model ServerMember {
