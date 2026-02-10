@@ -27,7 +27,7 @@ export class ServerService {
       throw new Error('Owner cannot leave the server. Transfer ownership or delete the server.');
     }
 
-    return await serverMemberRepository.removeMember(serverId, userId);
+    return await serverMemberRepository.removeMember(userId, serverId);
   }
 
   async joinServer(inviteCode: string, userId: string): Promise<ServerMember> {
