@@ -2,6 +2,7 @@ import { channelRepository } from '../repositories/channel.repository';
 import { serverMemberRepository } from '../repositories/server-member.repository';
 import { BadRequestError, NotFoundError, ForbiddenError } from '../utils/errors';
 import type { CreateChannelData, UpdateChannelData, ChannelResponse } from '../types/channel.types';
+import { SocketManager } from '../sockets/socket.manager';
 
 /**
  * Service gérant les channels
@@ -13,7 +14,7 @@ export class ChannelService {
    */
   private async checkAdminOrOwnerPermission(userId: string, serverId: string): Promise<void> {
     const isAdminOrOwner = await serverMemberRepository.isAdminOrOwner(userId, serverId);
-    
+
     if (!isAdminOrOwner) {
       throw new ForbiddenError('Vous n\'avez pas les permissions pour effectuer cette action');
     }
@@ -25,7 +26,7 @@ export class ChannelService {
    */
   private async checkMemberPermission(userId: string, serverId: string): Promise<void> {
     const isMember = await serverMemberRepository.isMember(userId, serverId);
-    
+
     if (!isMember) {
       throw new ForbiddenError('Vous n\'êtes pas membre de ce serveur');
     }
@@ -53,13 +54,18 @@ export class ChannelService {
       });
 
       // 3. Retourner la réponse
-      return {
+      const response = {
         id: channel.id,
         name: channel.name,
         serverId: channel.serverId,
         createdAt: channel.createdAt,
         updatedAt: channel.updatedAt,
       };
+
+      // 4. Emettre un événement Socket.io
+      SocketManager.getIO().to(`server:${channel.serverId}`).emit('channel:created', response);
+
+      return response;
     } catch (error: any) {
       // Gérer l'erreur de contrainte unique Prisma
       if (error.code === 'P2002') {
@@ -156,13 +162,18 @@ export class ChannelService {
       });
 
       // 4. Retourner le channel mis à jour
-      return {
+      const response = {
         id: updatedChannel.id,
         name: updatedChannel.name,
         serverId: updatedChannel.serverId,
         createdAt: updatedChannel.createdAt,
         updatedAt: updatedChannel.updatedAt,
       };
+
+      // 5. Emettre un événement Socket.io
+      SocketManager.getIO().to(`server:${updatedChannel.serverId}`).emit('channel:updated', response);
+
+      return response;
     } catch (error: any) {
       // Gérer l'erreur de contrainte unique Prisma
       if (error.code === 'P2002') {
@@ -192,6 +203,8 @@ export class ChannelService {
 
     // 3. Supprimer le channel (Prisma supprimera aussi les messages grâce à onDelete: Cascade)
     await channelRepository.deleteChannel(channelId);
+
+    SocketManager.getIO().to(`server:${channel.serverId}`).emit('channel:deleted', { channelId, serverId: channel.serverId });
   }
 }
 

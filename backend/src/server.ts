@@ -6,6 +6,8 @@ import serverRoutes from './routes/server.routes';
 import { prisma } from './config/database';
 import { redis } from './config/redis';
 import { errorHandler } from './middlewares/error.middleware';
+import { createServer } from 'http';
+import { SocketManager } from './sockets/socket.manager';
 
 // Import des routes
 import authRoutes from './routes/auth.routes';
@@ -15,6 +17,8 @@ import channelRoutes from './routes/channel.routes';
  * Initialisation de l'application Express
  */
 const app = express();
+
+const httpServer = createServer(app);
 
 // ============================================
 // MIDDLEWARES GLOBAUX
@@ -107,8 +111,12 @@ async function startServer() {
     await redis.ping();
     console.log('✅ Redis connecté');
 
-    // 3. Démarrer le serveur HTTP
-    app.listen(env.PORT, () => {
+    // 3. Initialiser Socket.io
+    SocketManager.init(httpServer);
+    console.log('✅ Socket.io initialisé');
+
+    // 4. Démarrer le serveur HTTP
+    httpServer.listen(env.PORT, () => {
       console.log('\n🚀 ============================================');
       console.log(`🚀 Serveur démarré sur le port ${env.PORT}`);
       console.log(`🌍 Environnement: ${env.NODE_ENV}`);
