@@ -50,7 +50,7 @@ model Channel {
   updatedAt DateTime @updatedAt
 
   // Relations
-  server   Server    @relation("OwnedChannels", fields: [serverId], references: [id])
+  server   Server    @relation("OwnedChannels", fields: [serverId], references: [id], onDelete: Cascade)
   messages Message[] @relation("ChannelMessages")  // Messages dans ce channel
 
   // Contrainte : pas deux channels avec le même nom dans un server
@@ -78,8 +78,8 @@ model ServerMember {
   joinedAt  DateTime @default(now())
 
   // Relations
-  user   User   @relation("UserMemberships", fields: [userId], references: [id])
-  server Server @relation("ServerMemberships", fields: [serverId], references: [id])
+  user   User   @relation("UserMemberships", fields: [userId], references: [id], onDelete: Cascade)
+  server Server @relation("ServerMemberships", fields: [serverId], references: [id], onDelete: Cascade)
 
   // Contrainte : un user ne peut être qu'une fois dans un server
   @@unique([userId, serverId])
@@ -93,5 +93,5 @@ model Invitation {
   createdAt DateTime  @default(now())
 
   // Relations
-  server Server @relation("ServerInvitations", fields: [serverId], references: [id])
+  server Server @relation("ServerInvitations", fields: [serverId], references: [id], onDelete: Cascade)
 }
