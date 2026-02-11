@@ -3,6 +3,8 @@ import { Server as SocketIOServer, Socket as SocketIOSocket } from 'socket.io';
 export interface EmitEvents {
   "message:received": (message: any) => void;
   "server:member_joined": (data: { userId: string, serverId: string }) => void;
+  "server:member_left": (data: { userId: string, serverId: string }) => void;
+  "server:deleted": (data: { serverId: string }) => void;
 }
 
 export interface ListenEvents {

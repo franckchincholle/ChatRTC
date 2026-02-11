@@ -3,6 +3,7 @@ import { serverMemberRepository } from '../repositories/server-member.repository
 import { NotFoundError, ForbiddenError, BadRequestError } from '../utils/errors';
 import { CreateServerDTO, Server, ServerMember, UpdateServerDTO } from "../types/server.types";
 import { randomBytes } from "crypto";
+import { SocketManager } from "../sockets/socket.manager";
 
 export class ServerService {
   private serverRepository: ServerRepository;
@@ -27,7 +28,11 @@ export class ServerService {
       throw new ForbiddenError('Owner cannot leave the server. Transfer ownership or delete the server.');
     }
 
-    return await serverMemberRepository.removeMember(userId, serverId);
+    const removedMember = await serverMemberRepository.removeMember(userId, serverId);
+
+    SocketManager.getIO().to(`server:${serverId}`).emit('server:member_left', { userId, serverId });
+
+    return removedMember;
   }
 
   async joinServer(inviteCode: string, userId: string): Promise<ServerMember> {
@@ -38,7 +43,11 @@ export class ServerService {
     /* if (invitation.expiresAt && invitation.expiresAt < new Date()) {
         throw new Error("Invitation code has expired");
     } */
-    return await serverMemberRepository.addMember(userId, invitation.serverId, 'MEMBER');
+    const newMember = await serverMemberRepository.addMember(userId, invitation.serverId, 'MEMBER');
+
+    SocketManager.getIO().to(`server:${invitation.serverId}`).emit('server:member_joined', { userId, serverId: invitation.serverId });
+
+    return newMember;
   }
 
   async generatedInviteCode(serverId: string, userId: string): Promise<string> {
@@ -129,6 +138,10 @@ export class ServerService {
     if (server.ownerId !== userId) {
       throw new ForbiddenError('Only the server owner can delete the server');
     }
-    return await this.serverRepository.delete(serverId);
+    const deletedServer = await this.serverRepository.delete(serverId);
+
+    SocketManager.getIO().to(`server:${serverId}`).emit('server:deleted', { serverId });
+    
+    return deletedServer;
   }
 }
