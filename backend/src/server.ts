@@ -42,7 +42,6 @@ app.use(cors({
  */
 app.use(express.json()); // Parse application/json
 app.use(express.urlencoded({ extended: true })); // Parse application/x-www-form-urlencoded
-app.use('/api/servers', serverRoutes);
 
 // ============================================
 // ROUTES
@@ -68,6 +67,7 @@ app.use('/auth', authRoutes);
 
 // TODO: Ajouter d'autres routes ici plus tard
 // app.use('/servers', serverRoutes);
+app.use('/api/servers', serverRoutes);
 // Routes de channels
 app.use('/', channelRoutes);
 // app.use('/messages', messageRoutes);
