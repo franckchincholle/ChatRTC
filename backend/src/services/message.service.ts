@@ -27,3 +27,5 @@ export class MessageService {
         return newMessage;
     }
 }
+
+export const messageService = new MessageService();
