@@ -10,6 +10,7 @@ export interface EmitEvents {
   "channel:updated": (channel: ChannelResponse) => void;
   "channel:deleted": (data: { channelId: string, serverId: string }) => void;
   "user:typing": (data: { userId: string, username?: string, channelId: string }) => void;
+  "user:status_changed": (data: { userId: string, status: 'online' | 'offline' }) => void;
 }
 
 export interface ListenEvents {

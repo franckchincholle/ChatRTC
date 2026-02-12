@@ -30,6 +30,7 @@ export class SocketManager {
         userServers.forEach((server) => {
           const roomName = `server:${server.id}`;
           socket.join(roomName);
+          socket.to(roomName).emit('user:status_changed', { userId, status: 'online' });
         });
 
         console.log(`🔗 User ${userId} a rejoint ${userServers.length} salons de serveurs`);
