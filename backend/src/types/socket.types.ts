@@ -9,6 +9,7 @@ export interface EmitEvents {
   "channel:created": (channel: ChannelResponse) => void;
   "channel:updated": (channel: ChannelResponse) => void;
   "channel:deleted": (data: { channelId: string, serverId: string }) => void;
+  "user:typing": (data: { userId: string, username: string, channelId: string }) => void;
 }
 
 export interface ListenEvents {
