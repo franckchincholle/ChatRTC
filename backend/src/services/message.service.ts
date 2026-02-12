@@ -22,7 +22,7 @@ export class MessageService {
         const newMessage = await messageRepository.create({ content, channelId, userId });
 
         // Emit message to channel members
-        SocketManager.getIO().to(channelId).emit('message:received', newMessage);
+        SocketManager.getIO().to(`server:${channel.serverId}`).emit('message:received', newMessage);
 
         return newMessage;
     }

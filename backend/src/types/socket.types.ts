@@ -9,12 +9,13 @@ export interface EmitEvents {
   "channel:created": (channel: ChannelResponse) => void;
   "channel:updated": (channel: ChannelResponse) => void;
   "channel:deleted": (data: { channelId: string, serverId: string }) => void;
-  "user:typing": (data: { userId: string, username: string, channelId: string }) => void;
+  "user:typing": (data: { userId: string, username?: string, channelId: string }) => void;
 }
 
 export interface ListenEvents {
   "message:send": (content: string, channelId: string) => void;
   "server:join_room": (serverId: string) => void;
+  "user:typing": (data: { channelId: string, serverId: string }) => void;
 }
 
 export interface InterServerEvents {}
