@@ -33,7 +33,7 @@ export const authService = {
    * Get current authenticated user
    */
   getCurrentUser: async (): Promise<User> => {
-    return apiClient.get<User>('/me');
+    return apiClient.get<User>('/auth/me');
   },
 
   /**
