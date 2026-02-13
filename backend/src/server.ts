@@ -12,6 +12,7 @@ import { SocketManager } from './sockets/socket.manager';
 // Import des routes
 import authRoutes from './routes/auth.routes';
 import channelRoutes from './routes/channel.routes';
+import messageRoutes from './routes/message.routes';
 
 /**
  * Initialisation de l'application Express
@@ -71,6 +72,7 @@ app.use('/api/servers', serverRoutes);
 // Routes de channels
 app.use('/', channelRoutes);
 // app.use('/messages', messageRoutes);
+app.use('/api/messages', messageRoutes);
 
 /**
  * Route 404 - Route non trouvée
