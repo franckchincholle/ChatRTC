@@ -11,6 +11,7 @@ export interface EmitEvents {
   "channel:deleted": (data: { channelId: string, serverId: string }) => void;
   "user:typing": (data: { userId: string, username?: string, channelId: string }) => void;
   "user:status_changed": (data: { userId: string, status: 'online' | 'offline' }) => void;
+  "message:deleted": (data: { messageId: string, channelId: string }) => void;
 }
 
 export interface ListenEvents {

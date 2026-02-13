@@ -10,5 +10,6 @@ router.use(authenticate);
 // message routes
 router.post('/', messageController.sendMessage);
 router.get('/channel/:channelId', messageController.getMessages);
+router.delete('/:messageId', messageController.deleteMessage);
 
 export default router;

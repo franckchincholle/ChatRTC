@@ -25,6 +25,18 @@ export class MessageRepository {
             }
         });
     }
+
+    async findById(id: string): Promise<Message | null> {
+        return prisma.message.findUnique({
+            where: { id },
+        });
+    }
+
+    async delete(id: string): Promise<Message> {
+        return prisma.message.delete({
+            where: { id },
+        });
+    }
 }
 
 export const messageRepository = new MessageRepository();
