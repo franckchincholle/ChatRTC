@@ -26,6 +26,18 @@ export class MessageService {
 
         return newMessage;
     }
+
+    async getChannelMessages(userId: string, channelId: string) {
+        const channel = await channelRepository.findById(channelId);
+        if (!channel) {
+            throw new ForbiddenError('Channel not found');
+        }
+        const isMember = await serverMemberRepository.isMember(userId, channel.serverId);
+        if (!isMember) {
+            throw new ForbiddenError('You are not a member of this server');
+        }
+        return messageRepository.findByChannelId(channelId);
+    }
 }
 
 export const messageService = new MessageService();

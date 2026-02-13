@@ -14,6 +14,19 @@ export class MessageController {
             next(error);
         }
     }
+
+    async getMessages(req: Request, res: Response, next: NextFunction) {
+        try {
+            const userId = req.user!.id;
+            const { channelId } = req.params as { channelId: string };
+
+            const messages = await messageService.getChannelMessages(userId, channelId);
+
+            res.json({ success: true, data: messages });
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 export const messageController = new MessageController();
