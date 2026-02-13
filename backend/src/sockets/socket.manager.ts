@@ -38,22 +38,23 @@ export class SocketManager {
         // 3. Rejoindre une room privée pour les notifications directes à l'user
         socket.join(`user:${userId}`);
 
-      } catch (error) {
-        console.error(`❌ Erreur lors de la synchronisation des rooms pour ${userId}:`, error);
-      }
-
-      const userServers = await this.serverRepository.findByUserId(userId);
-      userServers.forEach((server) => {
-        socket.join(`server:${server.id}`);
-      });
-      socket.on('user:typing', (data: { channelId: string, serverId: string }) => {
+        // 4. Gérer les événements de typing
+        socket.on('user:typing', (data: { channelId: string, serverId: string }) => {
         // On utilise socket.to pour ne pas se l'envoyer à soi-même
         socket.to(`server:${data.serverId}`).emit('user:typing', { userId: userId, channelId: data.channelId });
       });
 
+      // 5. Gérer la déconnexion
       socket.on('disconnect', () => {
         console.log(`🔌 Utilisateur déconnecté : ${userId}`);
+        userServers.forEach((server) => {
+          this.io.to(`server:${server.id}`).emit('user:status_changed', { userId, status: 'offline' });
+        })
       });
+
+      } catch (error) {
+        console.error(`❌ Erreur lors de la synchronisation des rooms pour ${userId}:`, error);
+      }  
     });
 
     return this.io;
