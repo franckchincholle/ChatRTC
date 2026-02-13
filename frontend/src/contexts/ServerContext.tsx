@@ -1,0 +1,200 @@
+'use client';
+
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { Server, ServerMember } from '@/types/server.types';
+import { serverService } from '@/services/api/server.service';
+import { useAuth } from '@/contexts/AuthContext';
+
+// ============================================
+// TYPES
+// ============================================
+
+interface ServerContextType {
+  servers: Server[];
+  selectedServer: Server | null;
+  isLoading: boolean;
+  error: string | null;
+  createServer: (name: string) => Promise<Server>;
+  updateServer: (id: string, name: string) => Promise<Server>;
+  deleteServer: (id: string) => Promise<void>;
+  joinServer: (inviteCode: string) => Promise<ServerMember>;
+  leaveServer: (id: string) => Promise<void>;
+  generateInviteCode: (id: string) => Promise<string>;
+  selectServer: (server: Server | null) => void;
+  refreshServers: () => Promise<void>;
+  clearError: () => void;
+}
+
+// ============================================
+// CONTEXT
+// ============================================
+
+const ServerContext = createContext<ServerContextType | null>(null);
+
+// ============================================
+// PROVIDER
+// ============================================
+
+export function ServerProvider({ children }: { children: React.ReactNode }) {
+  const [servers, setServers] = useState<Server[]>([]);
+  const [selectedServer, setSelectedServer] = useState<Server | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { isAuthenticated } = useAuth();
+
+  // Charger les serveurs dès que l'utilisateur est authentifié
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadServers();
+    } else {
+      // Réinitialiser à la déconnexion
+      setServers([]);
+      setSelectedServer(null);
+    }
+  }, [isAuthenticated]);
+
+  const loadServers = useCallback(async (): Promise<void> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const data = await serverService.getAll();
+      setServers(data);
+    } catch (err: any) {
+      setError(err.message || 'Échec du chargement des serveurs');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const createServer = useCallback(async (name: string): Promise<Server> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const newServer = await serverService.create({ name });
+      setServers((prev) => [...prev, newServer]);
+      return newServer;
+    } catch (err: any) {
+      setError(err.message || 'Échec de la création du serveur');
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const updateServer = useCallback(async (id: string, name: string): Promise<Server> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const updatedServer = await serverService.update(id, { name });
+      setServers((prev) => prev.map((s) => (s.id === id ? updatedServer : s)));
+      if (selectedServer?.id === id) setSelectedServer(updatedServer);
+      return updatedServer;
+    } catch (err: any) {
+      setError(err.message || 'Échec de la mise à jour du serveur');
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedServer]);
+
+  const deleteServer = useCallback(async (id: string): Promise<void> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      await serverService.delete(id);
+      setServers((prev) => prev.filter((s) => s.id !== id));
+      if (selectedServer?.id === id) setSelectedServer(null);
+    } catch (err: any) {
+      setError(err.message || 'Échec de la suppression du serveur');
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedServer]);
+
+  const joinServer = useCallback(async (inviteCode: string): Promise<ServerMember> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const member = await serverService.join({ inviteCode });
+      // On recharge la liste complète pour récupérer les infos du nouveau serveur
+      await loadServers();
+      return member;
+    } catch (err: any) {
+      setError(err.message || 'Échec de rejoindre le serveur');
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [loadServers]);
+
+  const leaveServer = useCallback(async (id: string): Promise<void> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      await serverService.leave(id);
+      setServers((prev) => prev.filter((s) => s.id !== id));
+      if (selectedServer?.id === id) setSelectedServer(null);
+    } catch (err: any) {
+      setError(err.message || 'Échec de quitter le serveur');
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedServer]);
+
+  const generateInviteCode = useCallback(async (id: string): Promise<string> => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await serverService.generateInviteCode(id);
+      // ✅ .code (aligné avec le backend)
+      return response.code;
+    } catch (err: any) {
+      setError(err.message || "Échec de la génération du code d'invitation");
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const selectServer = useCallback((server: Server | null) => {
+    setSelectedServer(server);
+  }, []);
+
+  const clearError = useCallback(() => setError(null), []);
+
+  return (
+    <ServerContext.Provider
+      value={{
+        servers,
+        selectedServer,
+        isLoading,
+        error,
+        createServer,
+        updateServer,
+        deleteServer,
+        joinServer,
+        leaveServer,
+        generateInviteCode,
+        selectServer,
+        refreshServers: loadServers,
+        clearError,
+      }}
+    >
+      {children}
+    </ServerContext.Provider>
+  );
+}
+
+// ============================================
+// HOOK INTERNE
+// ============================================
+
+export function useServersContext(): ServerContextType {
+  const context = useContext(ServerContext);
+  if (!context) {
+    throw new Error('useServersContext doit être utilisé dans un ServerProvider');
+  }
+  return context;
+}

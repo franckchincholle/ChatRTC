@@ -1,12 +1,12 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import { User, LoginDTO, SignupDTO } from '@/types/user.types';
 import { authService } from '@/services/api/auth.service';
 import { storage } from '@/utils/storage';
 
 // ============================================
-// TYPES DU CONTEXT
+// TYPES
 // ============================================
 
 interface AuthContextType {
@@ -21,54 +21,58 @@ interface AuthContextType {
 }
 
 // ============================================
-// CRÉATION DU CONTEXT
+// CONTEXT
 // ============================================
 
 const AuthContext = createContext<AuthContextType | null>(null);
+
+// ============================================
+// INITIALISATION SYNCHRONE
+// Lire le token AVANT le premier render pour éviter la race condition
+// ============================================
+
+function getInitialAuthState(): { user: User | null; isAuthenticated: boolean } {
+  if (typeof window === 'undefined') {
+    return { user: null, isAuthenticated: false };
+  }
+  try {
+    const token = storage.getToken();
+    const savedUser = storage.getUser();
+    if (token && savedUser) {
+      return { user: savedUser, isAuthenticated: true };
+    }
+  } catch {
+    storage.clear();
+  }
+  return { user: null, isAuthenticated: false };
+}
 
 // ============================================
 // PROVIDER
 // ============================================
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true); // true au départ pour vérifier le token
+  const initialState = getInitialAuthState();
+  const [user, setUser] = useState<User | null>(initialState.user);
+  const [isAuthenticated, setIsAuthenticated] = useState(initialState.isAuthenticated);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Vérifier si un token existe au chargement de l'app
-  useEffect(() => {
-    const initAuth = async () => {
-      const token = storage.getToken();
-      const savedUser = storage.getUser();
-
-      if (token && savedUser) {
-        // On a un token et un user en cache → on les utilise directement
-        setUser(savedUser);
-        setIsAuthenticated(true);
-      }
-      // Pas de token → l'utilisateur n'est pas connecté
-      setIsLoading(false);
-    };
-
-    initAuth();
-  }, []);
 
   const login = useCallback(async (data: LoginDTO): Promise<User> => {
     try {
       setIsLoading(true);
       setError(null);
 
-      const response = await authService.login(data);
+      // authService.login retourne maintenant directement AuthData (sans wrapper)
+      const authData = await authService.login(data);
 
-      // ✅ Utiliser accessToken (pas token)
-      storage.setToken(response.accessToken);
-      storage.setUser(response.user);
+      storage.setToken(authData.accessToken);
+      storage.setUser(authData.user);
 
-      setUser(response.user);
+      setUser(authData.user);
       setIsAuthenticated(true);
 
-      return response.user;
+      return authData.user;
     } catch (err: any) {
       setError(err.message || 'Échec de la connexion');
       throw err;
@@ -82,16 +86,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(true);
       setError(null);
 
-      const response = await authService.signup(data);
+      const authData = await authService.signup(data);
 
-      // ✅ Utiliser accessToken (pas token)
-      storage.setToken(response.accessToken);
-      storage.setUser(response.user);
+      storage.setToken(authData.accessToken);
+      storage.setUser(authData.user);
 
-      setUser(response.user);
+      setUser(authData.user);
       setIsAuthenticated(true);
 
-      return response.user;
+      return authData.user;
     } catch (err: any) {
       setError(err.message || "Échec de l'inscription");
       throw err;
@@ -111,23 +114,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
+  const clearError = useCallback(() => setError(null), []);
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated,
-        isLoading,
-        error,
-        login,
-        signup,
-        logout,
-        clearError,
-      }}
-    >
+    <AuthContext.Provider value={{ user, isAuthenticated, isLoading, error, login, signup, logout, clearError }}>
       {children}
     </AuthContext.Provider>
   );
@@ -140,7 +130,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error('useAuth doit être utilisé dans un AuthProvider');
   }
   return context;
 }

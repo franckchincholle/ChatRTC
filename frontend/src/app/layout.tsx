@@ -4,6 +4,8 @@ import '@/styles/auth.css';
 import '@/styles/chat.css';
 import '@/styles/components.css';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { ServerProvider } from '@/contexts/ServerContext';
+import { ChannelProvider } from '@/contexts/ChannelContext';
 
 export const metadata = {
   title: 'RTC - Real Time Chat',
@@ -19,7 +21,11 @@ export default function RootLayout({
     <html lang="fr">
       <body>
         <AuthProvider>
-          {children}
+          <ServerProvider>
+            <ChannelProvider>
+              {children}
+            </ChannelProvider>
+          </ServerProvider>
         </AuthProvider>
       </body>
     </html>

@@ -1,4 +1,5 @@
 // User types
+
 export interface User {
   id: string;
   username: string;
@@ -6,10 +7,14 @@ export interface User {
   createdAt: string;
 }
 
-export interface AuthResponse {
+/**
+ * Données retournées par le backend dans data lors du login/signup
+ * { success: true, data: { user, accessToken, refreshToken } }
+ */
+export interface AuthData {
+  user: User;
   accessToken: string;
   refreshToken: string;
-  user: User;
 }
 
 export interface LoginDTO {

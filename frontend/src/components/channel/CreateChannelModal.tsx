@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { useChannels } from '@/hooks/useChannel';
-import { useServers } from '@/hooks/useServer';
 import { validateChannelName } from '@/utils/validators';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
@@ -16,8 +15,8 @@ interface CreateChannelModalProps {
 export function CreateChannelModal({ isOpen, onClose }: CreateChannelModalProps) {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
-  const { selectedServer } = useServers();
-  const { createChannel, isLoading } = useChannels(selectedServer?.id || null);
+  // ✅ Plus besoin de serverId en argument - le Context le gère
+  const { createChannel, isLoading } = useChannels();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

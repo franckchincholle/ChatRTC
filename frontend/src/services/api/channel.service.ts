@@ -1,44 +1,49 @@
 // Channel API Service
 import { apiClient } from './client';
-import {
-  Channel,
-  CreateChannelDTO,
-  UpdateChannelDTO,
+import { ApiResponse } from '@/types/api.types';
+import { 
+  Channel, 
+  CreateChannelDTO, 
+  UpdateChannelDTO 
 } from '@/types/channel.types';
 
 export const channelService = {
   /**
-   * Get all channels for a server
+   * Récupérer tous les channels d'un serveur
    */
   getByServerId: async (serverId: string): Promise<Channel[]> => {
-    return apiClient.get<Channel[]>(`/servers/${serverId}/channels`);
+    const res = await apiClient.get<ApiResponse<{ channels: Channel[] }>>(`/servers/${serverId}/channels`);
+    return res.data.channels;
   },
 
   /**
-   * Get a specific channel by ID
+   * Récupérer un channel par ID
    */
   getById: async (id: string): Promise<Channel> => {
-    return apiClient.get<Channel>(`/channels/${id}`);
+    const res = await apiClient.get<ApiResponse<{ channel: Channel }>>(`/channels/${id}`);
+    return res.data.channel;
   },
 
   /**
-   * Create a new channel in a server
+   * Créer un nouveau channel dans un serveur
    */
   create: async (serverId: string, data: CreateChannelDTO): Promise<Channel> => {
-    return apiClient.post<Channel>(`/servers/${serverId}/channels`, data);
+    const res = await apiClient.post<ApiResponse<{ channel: Channel }>>(`/servers/${serverId}/channels`, data);
+    return res.data.channel;
   },
 
   /**
-   * Update a channel
+   * Mettre à jour un channel
    */
   update: async (id: string, data: UpdateChannelDTO): Promise<Channel> => {
-    return apiClient.put<Channel>(`/channels/${id}`, data);
+    const res = await apiClient.put<ApiResponse<{ channel: Channel }>>(`/channels/${id}`, data);
+    return res.data.channel;
   },
 
   /**
-   * Delete a channel
+   * Supprimer un channel
    */
   delete: async (id: string): Promise<void> => {
-    return apiClient.delete<void>(`/channels/${id}`);
+    await apiClient.delete<ApiResponse<void>>(`/channels/${id}`);
   },
 };

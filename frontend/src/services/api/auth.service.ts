@@ -1,45 +1,37 @@
 // Auth API Service
 import { apiClient } from './client';
-import {
-  User,
-  AuthResponse,
-  LoginDTO,
-  SignupDTO,
-} from '@/types/user.types';
+import { ApiResponse } from '@/types/api.types';
+import { User, AuthData, LoginDTO, SignupDTO } from '@/types/user.types';
 
 export const authService = {
   /**
-   * Login with email and password
+   * Connexion avec email et mot de passe
    */
-  login: async (data: LoginDTO): Promise<AuthResponse> => {
-    return apiClient.post<AuthResponse>('/auth/login', data);
+  login: async (data: LoginDTO): Promise<AuthData> => {
+    const res = await apiClient.post<ApiResponse<AuthData>>('/auth/login', data);
+    return res.data;
   },
 
   /**
-   * Signup with email, username and password
+   * Inscription
    */
-  signup: async (data: SignupDTO): Promise<AuthResponse> => {
-    return apiClient.post<AuthResponse>('/auth/signup', data);
+  signup: async (data: SignupDTO): Promise<AuthData> => {
+    const res = await apiClient.post<ApiResponse<AuthData>>('/auth/signup', data);
+    return res.data;
   },
 
   /**
-   * Logout current user
+   * Déconnexion
    */
   logout: async (): Promise<void> => {
-    return apiClient.post<void>('/auth/logout');
+    await apiClient.post<ApiResponse<void>>('/auth/logout');
   },
 
   /**
-   * Get current authenticated user
+   * Récupérer l'utilisateur connecté
    */
   getCurrentUser: async (): Promise<User> => {
-    return apiClient.get<User>('/auth/me');
-  },
-
-  /**
-   * Refresh access token
-   */
-  refreshToken: async (): Promise<AuthResponse> => {
-    return apiClient.post<AuthResponse>('/auth/refresh');
+    const res = await apiClient.get<ApiResponse<{ user: User }>>('/auth/me');
+    return res.data.user;
   },
 };

@@ -1,10 +1,19 @@
 // Server types
+
 export interface Server {
   id: string;
   name: string;
   ownerId: string;
-  inviteCode?: string;
   createdAt: string;
+  updatedAt: string;
+}
+
+export interface ServerMember {
+  id: string;
+  userId: string;
+  serverId: string;
+  role: 'OWNER' | 'ADMIN' | 'MEMBER';
+  joinedAt: string;
 }
 
 export interface CreateServerDTO {
@@ -19,6 +28,7 @@ export interface JoinServerDTO {
   inviteCode: string;
 }
 
+// ✅ Aligné avec la réponse du backend : { success: true, data: { code: "..." } }
 export interface InviteCodeResponse {
-  inviteCode: string;
+  code: string;
 }
