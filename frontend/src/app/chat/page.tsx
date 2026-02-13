@@ -11,26 +11,26 @@ import { MembersSidebar } from '@/components/layout/MembersSidebar';
 import { Spinner } from '@/components/ui/Spinner';
 
 export default function ChatPage() {
-  const { isAuthenticated, loadUser, isLoading } = useAuth();
+  // loadUser n'existe plus : l'AuthProvider vérifie le token automatiquement au démarrage
+  const { isAuthenticated, isLoading } = useAuth();
   const { connect } = useSocket();
   const router = useRouter();
 
-  useEffect(() => {
-    loadUser();
-  }, []);
-
+  // Rediriger vers /login si l'utilisateur n'est pas connecté
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push('/auth/login');
     }
   }, [isAuthenticated, isLoading, router]);
 
+  // Connecter le socket une fois authentifié
   useEffect(() => {
     if (isAuthenticated) {
       connect();
     }
   }, [isAuthenticated, connect]);
 
+  // Afficher un spinner pendant la vérification du token
   if (isLoading) {
     return (
       <div style={{ 
