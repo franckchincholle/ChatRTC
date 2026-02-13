@@ -25,11 +25,18 @@ export const storage = {
   getUser: (): User | null => {
     if (typeof window === 'undefined') return null;
     const user = localStorage.getItem(USER_KEY);
-    return user ? JSON.parse(user) : null;
+    if (!user || user === 'undefined' || user === 'null') return null;
+    try {
+      return JSON.parse(user);
+    } catch {
+      localStorage.removeItem(USER_KEY);
+      return null;
+    }
   },
 
   setUser: (user: User): void => {
     if (typeof window === 'undefined') return;
+    if (!user) return;
     localStorage.setItem(USER_KEY, JSON.stringify(user));
   },
 

@@ -1,7 +1,9 @@
 // Server API Service
 import { apiClient } from './client';
+import { ApiResponse } from '@/types/api.types';
 import {
   Server,
+  ServerMember,
   CreateServerDTO,
   UpdateServerDTO,
   JoinServerDTO,
@@ -10,58 +12,65 @@ import {
 
 export const serverService = {
   /**
-   * Get all servers for the current user
+   * Récupérer tous les serveurs de l'utilisateur connecté
    */
   getAll: async (): Promise<Server[]> => {
-    return apiClient.get<Server[]>('/servers');
+    const res = await apiClient.get<ApiResponse<Server[]>>('/api/servers');
+    return res.data;
   },
 
   /**
-   * Get a specific server by ID
+   * Récupérer un serveur par ID
    */
   getById: async (id: string): Promise<Server> => {
-    return apiClient.get<Server>(`/servers/${id}`);
+    const res = await apiClient.get<ApiResponse<Server>>(`/api/servers/${id}`);
+    return res.data;
   },
 
   /**
-   * Create a new server
+   * Créer un nouveau serveur
    */
   create: async (data: CreateServerDTO): Promise<Server> => {
-    return apiClient.post<Server>('/servers', data);
+    const res = await apiClient.post<ApiResponse<Server>>('/api/servers', data);
+    return res.data;
   },
 
   /**
-   * Update a server
+   * Mettre à jour un serveur
    */
   update: async (id: string, data: UpdateServerDTO): Promise<Server> => {
-    return apiClient.put<Server>(`/servers/${id}`, data);
+    const res = await apiClient.put<ApiResponse<Server>>(`/api/servers/${id}`, data);
+    return res.data;
   },
 
   /**
-   * Delete a server
+   * Supprimer un serveur
    */
   delete: async (id: string): Promise<void> => {
-    return apiClient.delete<void>(`/servers/${id}`);
+    await apiClient.delete<ApiResponse<void>>(`/api/servers/${id}`);
   },
 
   /**
-   * Join a server with an invite code
+   * Rejoindre un serveur avec un code d'invitation
+   * ⚠️ Le backend retourne un ServerMember, pas un Server
    */
-  join: async (data: JoinServerDTO): Promise<Server> => {
-    return apiClient.post<Server>('/servers/join', data);
+  join: async (data: JoinServerDTO): Promise<ServerMember> => {
+    const res = await apiClient.post<ApiResponse<ServerMember>>('/api/servers/join', data);
+    return res.data;
   },
 
   /**
-   * Leave a server
+   * Quitter un serveur
    */
   leave: async (id: string): Promise<void> => {
-    return apiClient.delete<void>(`/servers/${id}/leave`);
+    await apiClient.delete<ApiResponse<void>>(`/api/servers/${id}/leave`);
   },
 
   /**
-   * Generate an invite code for a server
+   * Générer un code d'invitation pour un serveur
    */
   generateInviteCode: async (id: string): Promise<InviteCodeResponse> => {
-    return apiClient.post<InviteCodeResponse>(`/servers/${id}/invite`);
+    const res = await apiClient.post<ApiResponse<InviteCodeResponse>>(`/api/servers/${id}/invite`);
+    return res.data;
   },
 };

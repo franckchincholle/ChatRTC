@@ -3,28 +3,29 @@
 import React, { useState } from 'react';
 import { useChannels } from '@/hooks/useChannel';
 import { useServers } from '@/hooks/useServer';
-import { useMembers } from '@/hooks/useMembers';
+import { useAuth } from '@/hooks/useAuth';
 import { ChannelItem } from './ChannelItem';
 import { CreateChannelModal } from './CreateChannelModal';
 import { Button } from '@/components/ui/Button';
 
 export function ChannelList() {
-  const { selectedServer } = useServers();
-  const { channels, selectedChannel, selectChannel } = useChannels(selectedServer?.id || null);
-  const { members } = useMembers(selectedServer?.id || null);
+  const { selectedServer, generateInviteCode } = useServers();
+  const { channels, selectedChannel, selectChannel } = useChannels();
+  const { user } = useAuth();
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  // Get current user role
-  const currentUserRole = members.find(m => m.id === selectedServer?.ownerId)?.role || 'member';
-  const canManageChannels = currentUserRole === 'owner' || currentUserRole === 'admin';
+  // L'owner est celui dont l'id correspond à ownerId du serveur
+  const isOwner = user?.id === selectedServer?.ownerId;
+  // Pour l'instant on considère que seul l'owner peut gérer les channels
+  // (la logique admin sera affinée avec useMembers une fois connecté)
+  const canManageChannels = isOwner;
 
   const handleInvite = async () => {
     if (!selectedServer) return;
-    
     try {
-      const { generateInviteCode } = useServers();
+      // ✅ generateInviteCode vient du hook, pas appelé à l'intérieur du handler
       const code = await generateInviteCode(selectedServer.id);
-      alert(`Code d'invitation: ${code}`);
+      alert(`Code d'invitation : ${code}`);
     } catch (err) {
       console.error('Failed to generate invite code:', err);
     }
@@ -45,8 +46,8 @@ export function ChannelList() {
 
       {canManageChannels && (
         <div style={{ padding: '0.5rem' }}>
-          <Button 
-            variant="primary" 
+          <Button
+            variant="primary"
             onClick={() => setShowCreateModal(true)}
             style={{ width: '100%' }}
           >

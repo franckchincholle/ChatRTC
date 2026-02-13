@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { Channel } from '@/types/channel.types';
 import { useChannels } from '@/hooks/useChannel';
-import { useServers } from '@/hooks/useServer';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 
@@ -15,14 +14,13 @@ interface ChannelItemProps {
 }
 
 export function ChannelItem({ channel, isSelected, onSelect, canManage }: ChannelItemProps) {
-  const { selectedServer } = useServers();
-  const { updateChannel, deleteChannel } = useChannels(selectedServer?.id || null);
+  // ✅ Plus besoin de serverId en argument - le Context le gère
+  const { updateChannel, deleteChannel } = useChannels();
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(channel.name);
 
   const handleUpdate = async () => {
     if (!editName.trim()) return;
-    
     try {
       await updateChannel(channel.id, editName);
       setIsEditing(false);
@@ -57,7 +55,7 @@ export function ChannelItem({ channel, isSelected, onSelect, canManage }: Channe
             autoFocus
           />
           <div style={{ display: 'flex', gap: '0.25rem' }}>
-            <Button variant="success" onClick={handleUpdate}>✓</Button>
+            <Button variant="success" onClick={handleUpdate}>✔</Button>
             <Button variant="danger" onClick={() => setIsEditing(false)}>✗</Button>
           </div>
         </div>
@@ -67,7 +65,7 @@ export function ChannelItem({ channel, isSelected, onSelect, canManage }: Channe
 
   return (
     <div className="channel-item-container">
-      <div 
+      <div
         className={`channel-item ${isSelected ? 'active' : ''}`}
         onClick={onSelect}
       >
