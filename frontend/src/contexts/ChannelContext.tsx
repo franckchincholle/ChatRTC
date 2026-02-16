@@ -5,9 +5,7 @@ import { Channel } from '@/types/channel.types';
 import { channelService } from '@/services/api/channel.service';
 import { useServersContext } from '@/contexts/ServerContext';
 
-// ============================================
-// TYPES
-// ============================================
+const SELECTED_CHANNEL_KEY = 'selected_channel';
 
 interface ChannelContextType {
   channels: Channel[];
@@ -22,15 +20,7 @@ interface ChannelContextType {
   clearError: () => void;
 }
 
-// ============================================
-// CONTEXT
-// ============================================
-
 const ChannelContext = createContext<ChannelContextType | null>(null);
-
-// ============================================
-// PROVIDER
-// ============================================
 
 export function ChannelProvider({ children }: { children: React.ReactNode }) {
   const [channels, setChannels] = useState<Channel[]>([]);
@@ -46,6 +36,7 @@ export function ChannelProvider({ children }: { children: React.ReactNode }) {
     } else {
       setChannels([]);
       setSelectedChannel(null);
+      localStorage.removeItem(SELECTED_CHANNEL_KEY);
     }
   }, [selectedServer?.id]);
 
@@ -58,6 +49,15 @@ export function ChannelProvider({ children }: { children: React.ReactNode }) {
       setError(null);
       const data = await channelService.getByServerId(id);
       setChannels(data);
+
+      // ✅ Restaurer le channel sélectionné depuis localStorage
+      const savedChannelId = localStorage.getItem(SELECTED_CHANNEL_KEY);
+      if (savedChannelId) {
+        const savedChannel = data.find((c) => c.id === savedChannelId);
+        if (savedChannel) {
+          setSelectedChannel(savedChannel);
+        }
+      }
     } catch (err: any) {
       setError(err.message || 'Échec du chargement des canaux');
     } finally {
@@ -67,7 +67,6 @@ export function ChannelProvider({ children }: { children: React.ReactNode }) {
 
   const createChannel = useCallback(async (name: string): Promise<Channel> => {
     if (!selectedServer) throw new Error('Aucun serveur sélectionné');
-
     try {
       setIsLoading(true);
       setError(null);
@@ -87,8 +86,10 @@ export function ChannelProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(true);
       setError(null);
       const updatedChannel = await channelService.update(id, { name });
+      // ✅ Mise à jour immédiate de la liste
       setChannels((prev) => prev.map((c) => (c.id === id ? updatedChannel : c)));
-      if (selectedChannel?.id === id) setSelectedChannel(updatedChannel);
+      // ✅ Mise à jour du channel sélectionné si c'est celui-là
+      setSelectedChannel((prev) => (prev?.id === id ? updatedChannel : prev));
       return updatedChannel;
     } catch (err: any) {
       setError(err.message || 'Échec de la mise à jour du canal');
@@ -96,7 +97,7 @@ export function ChannelProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedChannel]);
+  }, []);
 
   const deleteChannel = useCallback(async (id: string): Promise<void> => {
     try {
@@ -104,49 +105,46 @@ export function ChannelProvider({ children }: { children: React.ReactNode }) {
       setError(null);
       await channelService.delete(id);
       setChannels((prev) => prev.filter((c) => c.id !== id));
-      if (selectedChannel?.id === id) setSelectedChannel(null);
+      setSelectedChannel((prev) => {
+        if (prev?.id === id) {
+          localStorage.removeItem(SELECTED_CHANNEL_KEY);
+          return null;
+        }
+        return prev;
+      });
     } catch (err: any) {
       setError(err.message || 'Échec de la suppression du canal');
       throw err;
     } finally {
       setIsLoading(false);
     }
-  }, [selectedChannel]);
+  }, []);
 
   const selectChannel = useCallback((channel: Channel | null) => {
     setSelectedChannel(channel);
+    // ✅ Persister le channel sélectionné pour le restaurer au refresh
+    if (channel) {
+      localStorage.setItem(SELECTED_CHANNEL_KEY, channel.id);
+    } else {
+      localStorage.removeItem(SELECTED_CHANNEL_KEY);
+    }
   }, []);
 
   const clearError = useCallback(() => setError(null), []);
 
   return (
-    <ChannelContext.Provider
-      value={{
-        channels,
-        selectedChannel,
-        isLoading,
-        error,
-        createChannel,
-        updateChannel,
-        deleteChannel,
-        selectChannel,
-        refreshChannels: () => loadChannels(),
-        clearError,
-      }}
-    >
+    <ChannelContext.Provider value={{
+      channels, selectedChannel, isLoading, error,
+      createChannel, updateChannel, deleteChannel,
+      selectChannel, refreshChannels: () => loadChannels(), clearError,
+    }}>
       {children}
     </ChannelContext.Provider>
   );
 }
 
-// ============================================
-// HOOK INTERNE
-// ============================================
-
 export function useChannelsContext(): ChannelContextType {
   const context = useContext(ChannelContext);
-  if (!context) {
-    throw new Error('useChannelsContext doit être utilisé dans un ChannelProvider');
-  }
+  if (!context) throw new Error('useChannelsContext doit être utilisé dans un ChannelProvider');
   return context;
 }

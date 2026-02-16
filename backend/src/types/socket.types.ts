@@ -16,9 +16,12 @@ export interface EmitEvents {
   'channel:deleted': (data: { channelId: string; serverId: string }) => void;
   // Users
   'user:typing': (data: {
-    userId: string;
-    username?: string;
+    serverId: string;
     channelId: string;
+    user: {
+      userId: string;
+      username: string;
+    };
   }) => void;
   'user:status_changed': (data: {
     userId: string;
@@ -37,6 +40,7 @@ export interface InterServerEvents {}
 
 export interface SocketData {
   userId: string;
+  username: string;
 }
 
 export type ServerIO = SocketIOServer<

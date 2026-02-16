@@ -21,6 +21,7 @@ export const socketAuthMiddleware = async (socket: AppSocket, next: (err?: Error
         }
 
         socket.data.userId = user.id;
+        socket.data.username = user.username;
 
         next();
     } catch (error) {

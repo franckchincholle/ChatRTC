@@ -20,6 +20,8 @@ export class SocketManager {
 
     this.io.on('connection', async (socket: AppSocket) => {
       const userId = socket.data.userId;
+      const username = socket.data.username;
+
       console.log(`📡 Utilisateur connecté aux sockets : ${userId}`);
 
       try {
@@ -41,7 +43,7 @@ export class SocketManager {
         // 4. Gérer les événements de typing
         socket.on('user:typing', (data: { channelId: string, serverId: string }) => {
           // On utilise socket.to pour ne pas se l'envoyer à soi-même
-          socket.to(`server:${data.serverId}`).emit('user:typing', { userId: userId, channelId: data.channelId });
+          socket.to(`server:${data.serverId}`).emit('user:typing', { serverId: data.serverId, channelId: data.channelId, user: { userId, username } });
         });
 
         // 6. Gérer la déconnexion
