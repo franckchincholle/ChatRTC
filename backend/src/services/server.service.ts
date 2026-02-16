@@ -127,6 +127,7 @@ export class ServerService {
     if (server.ownerId !== userId) {
       throw new ForbiddenError('Only the server owner can update server details');
     }
+    SocketManager.getIO().to(`server:${serverId}`).emit('server:updated', { id: serverId, name: data.name });
     return await this.serverRepository.update(serverId, data);
   }
 

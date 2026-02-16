@@ -2,14 +2,19 @@ import { Server as SocketIOServer, Socket as SocketIOSocket } from 'socket.io';
 import { ChannelResponse } from './channel.types';
 
 export interface EmitEvents {
+  // Messages
   'message:received': (message: any) => void;
   'message:deleted': (data: { messageId: string; channelId: string }) => void;
+  // Servers
+  'server:updated': (server: any) => void;
   'server:member_joined': (data: { userId: string; serverId: string }) => void;
   'server:member_left': (data: { userId: string; serverId: string }) => void;
   'server:deleted': (data: { serverId: string }) => void;
+  // Channels
   'channel:created': (channel: ChannelResponse) => void;
   'channel:updated': (channel: ChannelResponse) => void;
   'channel:deleted': (data: { channelId: string; serverId: string }) => void;
+  // Users
   'user:typing': (data: {
     userId: string;
     username?: string;
