@@ -72,7 +72,7 @@ app.use('/api/servers', serverRoutes);
 // Routes de channels
 app.use('/', channelRoutes);
 // app.use('/messages', messageRoutes);
-app.use('/api/messages', messageRoutes);
+app.use('/channels/:channelId/messages', messageRoutes);
 
 /**
  * Route 404 - Route non trouvée

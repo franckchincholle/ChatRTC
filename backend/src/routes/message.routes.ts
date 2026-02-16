@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { messageController } from '../controllers/message.controller';
 import { authenticate } from '../middlewares/auth.middleware';
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
 // authentication
 router.use(authenticate);

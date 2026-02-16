@@ -7,27 +7,27 @@ export const SOCKET_EVENTS = {
   CONNECT_ERROR: 'connect_error',
 
   // Client → Server events
-  JOIN_SERVER: 'join_server',
-  LEAVE_SERVER: 'leave_server',
+  JOIN_SERVER: 'server:member_joined',
+  LEAVE_SERVER: 'server:member_left',
   JOIN_CHANNEL: 'join_channel',
   LEAVE_CHANNEL: 'leave_channel',
-  TYPING: 'typing',
-  STOP_TYPING: 'stop_typing',
+  TYPING: 'user:typing',
+  STOP_TYPING: 'user:stop_typing',
 
   // Server → Client events
-  NEW_MESSAGE: 'new_message',
-  MESSAGE_UPDATED: 'message_updated',
-  MESSAGE_DELETED: 'message_deleted',
+  NEW_MESSAGE: 'message:received',
+  MESSAGE_UPDATED: 'message:updated',
+  MESSAGE_DELETED: 'message:deleted',
   USER_JOINED: 'user_joined',
   USER_LEFT: 'user_left',
   USER_TYPING: 'user_typing',
   USER_STOP_TYPING: 'user_stop_typing',
-  CHANNEL_CREATED: 'channel_created',
-  CHANNEL_UPDATED: 'channel_updated',
-  CHANNEL_DELETED: 'channel_deleted',
+  CHANNEL_CREATED: 'channel:created',
+  CHANNEL_UPDATED: 'channel:updated',
+  CHANNEL_DELETED: 'channel:deleted',
   MEMBER_ROLE_UPDATED: 'member_role_updated',
-  SERVER_UPDATED: 'server_updated',
-  SERVER_DELETED: 'server_deleted',
+  SERVER_UPDATED: 'server:updated',
+  SERVER_DELETED: 'server:deleted',
 } as const;
 
 export type SocketEvent = typeof SOCKET_EVENTS[keyof typeof SOCKET_EVENTS];

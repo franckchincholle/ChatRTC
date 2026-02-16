@@ -5,15 +5,12 @@ import { useMessages } from '@/hooks/useMessage';
 import { MessageItem } from './MessageItem';
 import { Spinner } from '@/components/ui/Spinner';
 
-interface MessageListProps {
-  channelId: string;
-}
-
-export function MessageList({ channelId }: MessageListProps) {
-  const { messages, isLoading } = useMessages(channelId);
+export function MessageList() {
+  // ✅ Plus d'argument — le Context gère selectedChannel en interne
+  const { messages, isLoading } = useMessages();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom when new messages arrive
+  // Auto-scroll vers le bas à chaque nouveau message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);

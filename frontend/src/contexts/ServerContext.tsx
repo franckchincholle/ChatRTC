@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Server, ServerMember } from '@/types/server.types';
 import { serverService } from '@/services/api/server.service';
+import { socketService } from '@/services/socket/socket.service';
 import { useAuth } from '@/contexts/AuthContext';
 
 // ============================================
@@ -47,7 +48,6 @@ export function ServerProvider({ children }: { children: React.ReactNode }) {
     if (isAuthenticated) {
       loadServers();
     } else {
-      // Réinitialiser à la déconnexion
       setServers([]);
       setSelectedServer(null);
     }
@@ -117,7 +117,6 @@ export function ServerProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(true);
       setError(null);
       const member = await serverService.join({ inviteCode });
-      // On recharge la liste complète pour récupérer les infos du nouveau serveur
       await loadServers();
       return member;
     } catch (err: any) {
@@ -148,7 +147,6 @@ export function ServerProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(true);
       setError(null);
       const response = await serverService.generateInviteCode(id);
-      // ✅ .code (aligné avec le backend)
       return response.code;
     } catch (err: any) {
       setError(err.message || "Échec de la génération du code d'invitation");
@@ -159,8 +157,16 @@ export function ServerProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const selectServer = useCallback((server: Server | null) => {
+    // Quitter la room Socket.IO de l'ancien serveur
+    if (selectedServer) {
+      socketService.leaveServer(selectedServer.id);
+    }
     setSelectedServer(server);
-  }, []);
+    // Rejoindre la room Socket.IO du nouveau serveur
+    if (server) {
+      socketService.joinServer(server.id);
+    }
+  }, [selectedServer]);
 
   const clearError = useCallback(() => setError(null), []);
 
