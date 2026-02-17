@@ -23,6 +23,13 @@ export interface EmitEvents {
   'message:received': (message: any) => void;
   'message:deleted': (data: { messageId: string; channelId: string }) => void;
 
+  // Members
+  'member:role_updated': (data: {                           
+    userId: string; 
+    serverId: string; 
+    role: 'OWNER' | 'ADMIN' | 'MEMBER' 
+  }) => void;
+
   // Channels
   'channel:created': (channel: ChannelResponse) => void;
   'channel:updated': (channel: ChannelResponse) => void;
