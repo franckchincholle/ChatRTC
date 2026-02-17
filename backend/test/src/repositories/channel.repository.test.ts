@@ -24,4 +24,26 @@ describe('ChannelRepository', () => {
     const result = await channelRepository.findByServerId('s1');
     expect(result).toHaveLength(2);
   });
+
+  it('create: devrait créer un nouveau channel', async () => {
+    const channelData = { name: 'annonces', serverId: 's1' };
+    (prisma.channel.create as jest.Mock).mockResolvedValue({ id: 'c3', ...channelData });
+    
+    // On utilise le nom de méthode exact de ton repo : createChannel ou create
+    await channelRepository.createChannel(channelData as any); 
+    
+    expect(prisma.channel.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ name: 'annonces' })
+    });
+  });
+
+  it('delete: devrait supprimer le channel spécifié', async () => {
+    await channelRepository.deleteChannel('c1');
+    expect(prisma.channel.delete).toHaveBeenCalledWith({ where: { id: 'c1' } });
+  });
+
+  it('deleteChannel: devrait supprimer un channel', async () => {
+    await channelRepository.deleteChannel('c1');
+    expect(prisma.channel.delete).toHaveBeenCalled();
+  });
 });

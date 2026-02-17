@@ -88,4 +88,32 @@ describe('MessageService', () => {
       ).rejects.toThrow(ForbiddenError);
     });
   });
+
+  describe('getChannelMessages', () => {
+    it('devrait retourner les messages si l utilisateur est membre', async () => {
+      (channelRepository.findById as any).mockResolvedValue({
+        id: 'c1',
+        serverId: 's1',
+      });
+      (serverMemberRepository.isMember as any).mockResolvedValue(true);
+      (messageRepository.findByChannelId as any).mockResolvedValue([
+        { id: 'm1', content: 'hello' },
+      ]);
+
+      const result = await messageService.getChannelMessages('u1', 'c1');
+      expect(result).toHaveLength(1);
+    });
+
+    it('devrait lever une ForbiddenError si l utilisateur n est pas membre du serveur', async () => {
+      (channelRepository.findById as any).mockResolvedValue({
+        id: 'c1',
+        serverId: 's1',
+      });
+      (serverMemberRepository.isMember as any).mockResolvedValue(false);
+
+      await expect(
+        messageService.getChannelMessages('u1', 'c1')
+      ).rejects.toThrow(); // Devrait lever ForbiddenError
+    });
+  });
 });
