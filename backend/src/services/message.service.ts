@@ -1,8 +1,8 @@
 import { messageRepository, MessageWithAuthor } from '../repositories/message.repository';
 import { channelRepository } from '../repositories/channel.repository';
 import { serverMemberRepository } from '../repositories/server-member.repository';
-import { SocketManager } from '../sockets/socket.manager';
 import { NotFoundError, ForbiddenError } from '../utils/errors';
+// ← Plus d'import SocketManager ici
 
 export class MessageService {
   async sendMessage(
@@ -16,14 +16,8 @@ export class MessageService {
     const isMember = await serverMemberRepository.isMember(userId, channel.serverId);
     if (!isMember) throw new ForbiddenError('You are not a member of this server');
 
-    const newMessage = await messageRepository.create({ content, channelId, userId });
-
-    // Émettre le message à tous les membres du serveur
-    SocketManager.getIO()
-      .to(`server:${channel.serverId}`)
-      .emit('message:received', newMessage);
-
-    return newMessage;
+    // ✅ Uniquement sauvegarder en DB, pas d'émission ici
+    return await messageRepository.create({ content, channelId, userId });
   }
 
   async getChannelMessages(
@@ -53,7 +47,6 @@ export class MessageService {
     const requesterRole = requesterMember?.role;
     const authorRole = authorMember?.role;
 
-    // Logique de permissions
     const canDelete =
       isAuthor ||
       requesterRole === 'OWNER' ||
@@ -63,12 +56,8 @@ export class MessageService {
       throw new ForbiddenError('You do not have permission to delete this message');
     }
 
+    // ✅ Uniquement supprimer en DB, pas d'émission ici
     await messageRepository.delete(messageId);
-
-    // Émettre l'événement de suppression
-    SocketManager.getIO()
-      .to(`server:${channel.serverId}`)
-      .emit('message:deleted', { messageId, channelId: message.channelId });
   }
 }
 

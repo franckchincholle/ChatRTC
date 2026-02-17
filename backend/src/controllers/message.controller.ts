@@ -15,9 +15,15 @@ export class MessageController {
 
       const message = await messageService.sendMessage(userId, channelId, content);
 
-      SocketManager.getIO()
-        .to(`channel:${channelId}`)
-        .emit('message:received', message);
+      // 🔍 DEBUG
+    const io = SocketManager.getIO();
+    const room = `channel:${channelId}`;
+    const socketsInRoom = await io.in(room).fetchSockets();
+    console.log(`📤 Émission vers room: ${room}`);
+    console.log(`👥 Sockets dans cette room: ${socketsInRoom.length}`);
+    socketsInRoom.forEach(s => console.log(`  - Socket: ${s.id}`));
+
+    io.to(room).emit('message:received', message);
 
       res.status(201).json({ success: true, data: message });
     } catch (error) {

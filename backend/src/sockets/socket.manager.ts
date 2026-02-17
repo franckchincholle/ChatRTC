@@ -46,7 +46,12 @@ export class SocketManager {
         socket.on('join_channel', (data: { serverId: string, channelId: string }) => {
           const channelRoom = `channel:${data.channelId}`;
           socket.join(channelRoom);
-          console.log(`📺 User ${userId} a rejoint channel ${data.channelId}`);
+          // 🔍 DEBUG
+  console.log(`📺 JOIN_CHANNEL reçu:`);
+  console.log(`  - userId: ${userId}`);
+  console.log(`  - channelId: ${data.channelId}`);
+  console.log(`  - room: ${channelRoom}`);
+  console.log(`  - Toutes les rooms du socket: ${[...socket.rooms].join(', ')}`);
 
           socket.to(channelRoom).emit('channel:user_joined', {
             userId,

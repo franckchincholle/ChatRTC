@@ -46,14 +46,26 @@ export function MessageProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!selectedChannel || !selectedServer) return;
 
-    // Rejoindre la room du channel côté Socket.IO
-    socketService.joinChannel(selectedServer.id, selectedChannel.id);
-    console.log(`📺 Joined channel room: ${selectedChannel.name}`);
+    const joinWhenReady = () => {
+      if (socketService.connected) {
+        console.log(`📺 JOIN channel: ${selectedChannel.name}`);
+        socketService.joinChannel(selectedServer.id, selectedChannel.id);
+      } else {
+        // Réessayer après 500ms si pas encore connecté
+        console.log('⏳ Socket pas encore connecté, retry dans 500ms...');
+        setTimeout(joinWhenReady, 500);
+      }
+    };
+
+    joinWhenReady();
+    
 
     return () => {
+      console.log('🔍 LEAVE CHANNEL EFFECT:');
+    console.log('  - leaving channel:', selectedChannel.id, selectedChannel.name);
       // Quitter la room quand on change de channel
       socketService.leaveChannel(selectedServer.id, selectedChannel.id);
-      console.log(`📺 Left channel room: ${selectedChannel.name}`);
+      
     };
   }, [selectedChannel?.id, selectedServer?.id]);
 
