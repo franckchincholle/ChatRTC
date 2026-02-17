@@ -14,7 +14,7 @@ describe('AuthService', () => {
     email: 'test@example.com',
     username: 'testuser',
     password: 'hashedPassword',
-    createdAt: new Date()
+    createdAt: new Date(),
   };
 
   beforeEach(() => {
@@ -32,17 +32,44 @@ describe('AuthService', () => {
     const result = await authService.signup({
       username: 'testuser',
       email: 'test@example.com',
-      password: 'password123'
+      password: 'password123',
     });
 
     expect(result.accessToken).toBe('access');
   });
 
-  it('login: devrait lever une erreur si le mot de passe est faux', async () => {
-    (userRepository.findByEmail as any).mockResolvedValue(mockUser);
-    (bcrypt.comparePassword as any).mockResolvedValue(false);
+  describe('login', () => {
+    it('devrait connecter un utilisateur et renvoyer des tokens', async () => {
+      (userRepository.findByEmail as any).mockResolvedValue(mockUser);
+      (bcrypt.comparePassword as any).mockResolvedValue(true);
+      (jwt.generateAccessToken as any).mockReturnValue('access');
+      (jwt.generateRefreshToken as any).mockReturnValue('refresh');
 
-    await expect(authService.login({ email: 'test@example.com', password: 'wrong' }))
-      .rejects.toThrow(UnauthorizedError);
+      const result = await authService.login({
+        email: 'test@example.com',
+        password: 'password123',
+      });
+      expect(result.accessToken).toBeDefined();
+    });
+
+    it('devrait lever une erreur si le mot de passe est faux', async () => {
+      (userRepository.findByEmail as any).mockResolvedValue(mockUser);
+      (bcrypt.comparePassword as any).mockResolvedValue(false);
+
+      await expect(
+        authService.login({ email: 'test@example.com', password: 'wrong' })
+      ).rejects.toThrow(UnauthorizedError);
+    });
+  });
+
+  describe('refreshAccessToken', () => {
+    it('devrait générer un nouveau access token', async () => {
+      (jwt.verifyRefreshToken as any).mockReturnValue({ userId: 'user-123' });
+      (userRepository.findById as any).mockResolvedValue(mockUser);
+      (jwt.generateAccessToken as any).mockReturnValue('new_access_token');
+
+      const result = await authService.refreshAccessToken('valid-refresh-token');
+      expect(result.accessToken).toBe('new_access_token');
+    });
   });
 });
