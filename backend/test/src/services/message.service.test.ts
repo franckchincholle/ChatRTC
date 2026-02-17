@@ -12,63 +12,80 @@ jest.mock('../../../src/sockets/socket.manager');
 
 describe('MessageService', () => {
   const mockUserId = 'user-123';
-  const mockServerId = 'server-456';
-  const mockChannelId = 'chan-789';
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
-    // Mock de SocketManager.getIO().to().emit()
     const mockEmit = { emit: jest.fn() };
     const mockTo = { to: jest.fn().mockReturnValue(mockEmit) };
     (SocketManager as any).getIO = jest.fn().mockReturnValue(mockTo);
   });
 
+  describe('sendMessage', () => {
+    it('devrait envoyer un message avec succès', async () => {
+      // Mock Channel
+      (channelRepository.findById as jest.Mock).mockResolvedValue({
+        id: 'c1',
+        serverId: 's1',
+      });
+      // Mock Member
+      (serverMemberRepository.isMember as jest.Mock).mockResolvedValue(true);
+      // Mock Create
+      const mockMsg = { id: 'm1', content: 'Hello' };
+      (messageRepository.create as jest.Mock).mockResolvedValue(mockMsg);
+
+      const result = await messageService.sendMessage('u1', 'c1', 'Hello');
+
+      expect(result).toEqual(mockMsg);
+      // Vérifie que le socket a été appelé
+      const { SocketManager } = require('../../../src/sockets/socket.manager');
+      expect(SocketManager.getIO).toHaveBeenCalled();
+    });
+
+    it('devrait lever NotFoundError si le channel n existe pas', async () => {
+      (channelRepository.findById as jest.Mock).mockResolvedValue(null);
+      await expect(
+        messageService.sendMessage('u1', 'c1', 'Hello')
+      ).rejects.toThrow();
+    });
+  });
+
   describe('deleteMessage', () => {
     it('devrait supprimer si l utilisateur est l auteur', async () => {
-      // 1. Mock du message : On utilise userId (comme dans ton sendMessage)
-      (messageRepository.findById as jest.Mock).mockResolvedValue({ 
-        id: 'm1', 
-        userId: mockUserId, // <--- Doit être identique au premier argument de deleteMessage
-        channelId: mockChannelId 
+      // Correction : utiliser userId et non authorId pour matcher le service
+      const mockMsg = { id: 'm1', userId: mockUserId, channelId: 'c1' };
+      (messageRepository.findById as jest.Mock).mockResolvedValue(mockMsg);
+      (channelRepository.findById as jest.Mock).mockResolvedValue({
+        id: 'c1',
+        serverId: 's1',
       });
 
-      // 2. Mock du channel
-      (channelRepository.findById as jest.Mock).mockResolvedValue({ 
-        id: mockChannelId, 
-        serverId: mockServerId 
-      });
+      // Mock du membre demandeur et de l'auteur
+      const mockMember = { userId: mockUserId, role: 'MEMBER' };
+      (
+        serverMemberRepository.findByUserAndServer as jest.Mock
+      ).mockResolvedValue(mockMember);
 
-      // 3. Mock des membres (requis pour les étapes 3 et 4 de ton service)
-      const mockMember = { userId: mockUserId, serverId: mockServerId, role: 'MEMBER' };
-      (serverMemberRepository.findByUserAndServer as jest.Mock).mockResolvedValue(mockMember);
-
-      (messageRepository.delete as jest.Mock).mockResolvedValue(true);
-
-      // ACTION
       await messageService.deleteMessage(mockUserId, 'm1');
-      
-      // ASSERT
       expect(messageRepository.delete).toHaveBeenCalledWith('m1');
     });
 
-    it('devrait lever ForbiddenError si l utilisateur n est pas l auteur et pas OWNER', async () => {
-      // Message d'un autre utilisateur
-      (messageRepository.findById as jest.Mock).mockResolvedValue({ 
-        id: 'm1', 
-        userId: 'autre-utilisateur', 
-        channelId: mockChannelId 
+    it('devrait lever ForbiddenError si l utilisateur n est pas autorisé', async () => {
+      (messageRepository.findById as jest.Mock).mockResolvedValue({
+        id: 'm1',
+        userId: 'autre',
+        channelId: 'c1',
       });
-      (channelRepository.findById as jest.Mock).mockResolvedValue({ id: mockChannelId, serverId: mockServerId });
-      
-      // Le demandeur est un simple membre
-      (serverMemberRepository.findByUserAndServer as jest.Mock).mockResolvedValue({ 
-        userId: mockUserId, 
-        role: 'MEMBER' 
+      (channelRepository.findById as jest.Mock).mockResolvedValue({
+        id: 'c1',
+        serverId: 's1',
       });
+      (
+        serverMemberRepository.findByUserAndServer as jest.Mock
+      ).mockResolvedValue({ role: 'MEMBER' });
 
-      await expect(messageService.deleteMessage(mockUserId, 'm1'))
-        .rejects.toThrow(ForbiddenError);
+      await expect(
+        messageService.deleteMessage(mockUserId, 'm1')
+      ).rejects.toThrow(ForbiddenError);
     });
   });
 });
