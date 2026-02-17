@@ -3,11 +3,11 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Channel } from '@/types/channel.types';
 import { channelService } from '@/services/api/channel.service';
+import { socketService } from '@/services/socket/socket.service';
+import { SOCKET_EVENTS } from '@/services/socket/events';
 import { useServersContext } from '@/contexts/ServerContext';
 
-// ============================================
-// TYPES
-// ============================================
+const SELECTED_CHANNEL_KEY = 'selected_channel';
 
 interface ChannelContextType {
   channels: Channel[];
@@ -22,15 +22,7 @@ interface ChannelContextType {
   clearError: () => void;
 }
 
-// ============================================
-// CONTEXT
-// ============================================
-
 const ChannelContext = createContext<ChannelContextType | null>(null);
-
-// ============================================
-// PROVIDER
-// ============================================
 
 export function ChannelProvider({ children }: { children: React.ReactNode }) {
   const [channels, setChannels] = useState<Channel[]>([]);
@@ -39,14 +31,75 @@ export function ChannelProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const { selectedServer } = useServersContext();
 
-  // Recharger les channels quand le serveur sélectionné change
+  // Charger les channels quand le serveur change
   useEffect(() => {
     if (selectedServer) {
       loadChannels(selectedServer.id);
     } else {
       setChannels([]);
       setSelectedChannel(null);
+      localStorage.removeItem(SELECTED_CHANNEL_KEY);
     }
+  }, [selectedServer?.id]);
+
+  // ============================================
+  // ✅ ÉCOUTER LES ÉVÉNEMENTS SOCKET.IO
+  // ============================================
+  useEffect(() => {
+    if (!selectedServer) return;
+
+    // Channel créé par quelqu'un d'autre
+    const handleChannelCreated = (channel: Channel) => {
+      console.log('🆕 Channel créé via Socket:', channel.name);
+      // Vérifier que le channel appartient au serveur sélectionné
+      if (channel.serverId === selectedServer.id) {
+        setChannels((prev) => {
+          // Éviter les doublons si c'est nous qui l'avons créé
+          const exists = prev.find((c) => c.id === channel.id);
+          if (exists) return prev;
+          return [...prev, channel];
+        });
+      }
+    };
+
+    // Channel mis à jour
+    const handleChannelUpdated = (channel: Channel) => {
+      console.log('✏️ Channel mis à jour via Socket:', channel.name);
+      if (channel.serverId === selectedServer.id) {
+        setChannels((prev) =>
+          prev.map((c) => (c.id === channel.id ? channel : c))
+        );
+        // Mettre à jour selectedChannel si c'est celui qui est ouvert
+        setSelectedChannel((prev) =>
+          prev?.id === channel.id ? channel : prev
+        );
+      }
+    };
+
+    // Channel supprimé
+    const handleChannelDeleted = ({ channelId, serverId }: { channelId: string; serverId: string }) => {
+      console.log('🗑️ Channel supprimé via Socket:', channelId);
+      if (serverId === selectedServer.id) {
+        setChannels((prev) => prev.filter((c) => c.id !== channelId));
+        setSelectedChannel((prev) => {
+          if (prev?.id === channelId) {
+            localStorage.removeItem(SELECTED_CHANNEL_KEY);
+            return null;
+          }
+          return prev;
+        });
+      }
+    };
+
+    socketService.on(SOCKET_EVENTS.CHANNEL_CREATED, handleChannelCreated);
+    socketService.on(SOCKET_EVENTS.CHANNEL_UPDATED, handleChannelUpdated);
+    socketService.on(SOCKET_EVENTS.CHANNEL_DELETED, handleChannelDeleted);
+
+    return () => {
+      socketService.off(SOCKET_EVENTS.CHANNEL_CREATED, handleChannelCreated);
+      socketService.off(SOCKET_EVENTS.CHANNEL_UPDATED, handleChannelUpdated);
+      socketService.off(SOCKET_EVENTS.CHANNEL_DELETED, handleChannelDeleted);
+    };
   }, [selectedServer?.id]);
 
   const loadChannels = useCallback(async (serverId?: string): Promise<void> => {
@@ -58,6 +111,14 @@ export function ChannelProvider({ children }: { children: React.ReactNode }) {
       setError(null);
       const data = await channelService.getByServerId(id);
       setChannels(data);
+
+      const savedChannelId = localStorage.getItem(SELECTED_CHANNEL_KEY);
+      if (savedChannelId) {
+        const savedChannel = data.find((c) => c.id === savedChannelId);
+        if (savedChannel) {
+          setSelectedChannel(savedChannel);
+        }
+      }
     } catch (err: any) {
       setError(err.message || 'Échec du chargement des canaux');
     } finally {
@@ -67,12 +128,20 @@ export function ChannelProvider({ children }: { children: React.ReactNode }) {
 
   const createChannel = useCallback(async (name: string): Promise<Channel> => {
     if (!selectedServer) throw new Error('Aucun serveur sélectionné');
-
     try {
       setIsLoading(true);
       setError(null);
       const newChannel = await channelService.create(selectedServer.id, { name });
-      setChannels((prev) => [...prev, newChannel]);
+      
+      // ✅ Ajouter directement pour le créateur
+      // Pour les autres membres, Socket.IO via handleChannelCreated s'en charge
+      // handleChannelCreated vérifie les doublons donc pas de risque
+      setChannels((prev) => {
+        const exists = prev.find((c) => c.id === newChannel.id);
+        if (exists) return prev;
+        return [...prev, newChannel];
+      });
+      
       return newChannel;
     } catch (err: any) {
       setError(err.message || 'Échec de la création du canal');
@@ -87,8 +156,7 @@ export function ChannelProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(true);
       setError(null);
       const updatedChannel = await channelService.update(id, { name });
-      setChannels((prev) => prev.map((c) => (c.id === id ? updatedChannel : c)));
-      if (selectedChannel?.id === id) setSelectedChannel(updatedChannel);
+      // ✅ Ne pas mettre à jour ici : Socket.IO va recevoir channel:updated
       return updatedChannel;
     } catch (err: any) {
       setError(err.message || 'Échec de la mise à jour du canal');
@@ -96,57 +164,46 @@ export function ChannelProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedChannel]);
+  }, []);
 
   const deleteChannel = useCallback(async (id: string): Promise<void> => {
     try {
       setIsLoading(true);
       setError(null);
       await channelService.delete(id);
-      setChannels((prev) => prev.filter((c) => c.id !== id));
-      if (selectedChannel?.id === id) setSelectedChannel(null);
+      // ✅ Ne pas supprimer ici : Socket.IO va recevoir channel:deleted
     } catch (err: any) {
       setError(err.message || 'Échec de la suppression du canal');
       throw err;
     } finally {
       setIsLoading(false);
     }
-  }, [selectedChannel]);
+  }, []);
 
   const selectChannel = useCallback((channel: Channel | null) => {
     setSelectedChannel(channel);
+    if (channel) {
+      localStorage.setItem(SELECTED_CHANNEL_KEY, channel.id);
+    } else {
+      localStorage.removeItem(SELECTED_CHANNEL_KEY);
+    }
   }, []);
 
   const clearError = useCallback(() => setError(null), []);
 
   return (
-    <ChannelContext.Provider
-      value={{
-        channels,
-        selectedChannel,
-        isLoading,
-        error,
-        createChannel,
-        updateChannel,
-        deleteChannel,
-        selectChannel,
-        refreshChannels: () => loadChannels(),
-        clearError,
-      }}
-    >
+    <ChannelContext.Provider value={{
+      channels, selectedChannel, isLoading, error,
+      createChannel, updateChannel, deleteChannel,
+      selectChannel, refreshChannels: () => loadChannels(), clearError,
+    }}>
       {children}
     </ChannelContext.Provider>
   );
 }
 
-// ============================================
-// HOOK INTERNE
-// ============================================
-
 export function useChannelsContext(): ChannelContextType {
   const context = useContext(ChannelContext);
-  if (!context) {
-    throw new Error('useChannelsContext doit être utilisé dans un ChannelProvider');
-  }
+  if (!context) throw new Error('useChannelsContext doit être utilisé dans un ChannelProvider');
   return context;
 }

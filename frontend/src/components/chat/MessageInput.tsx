@@ -4,24 +4,23 @@ import React, { useState } from 'react';
 import { useMessages } from '@/hooks/useMessage';
 import { useTyping } from '@/hooks/useTyping';
 import { useServers } from '@/hooks/useServer';
+import { useChannels } from '@/hooks/useChannel';
 import { useAuth } from '@/hooks/useAuth';
 import { validateMessage } from '@/utils/validators';
 import { Button } from '@/components/ui/Button';
 
-interface MessageInputProps {
-  channelId: string;
-}
-
-export function MessageInput({ channelId }: MessageInputProps) {
+export function MessageInput() {
   const [content, setContent] = useState('');
   const [error, setError] = useState('');
-  
+
   const { user } = useAuth();
   const { selectedServer } = useServers();
-  const { sendMessage } = useMessages(channelId);
+  const { selectedChannel } = useChannels();
+  // ✅ Plus d'argument — le Context gère selectedChannel en interne
+  const { sendMessage } = useMessages();
   const { startTyping, stopTyping } = useTyping(
     selectedServer?.id || null,
-    channelId,
+    selectedChannel?.id || null,
     user?.id
   );
 

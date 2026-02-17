@@ -13,6 +13,7 @@ import { SocketManager } from './sockets/socket.manager';
 import authRoutes from './routes/auth.routes';
 import channelRoutes from './routes/channel.routes';
 import messageRoutes from './routes/message.routes';
+import memberRoutes from './routes/member.routes';
 
 /**
  * Initialisation de l'application Express
@@ -60,23 +61,14 @@ app.get('/health', (req: Request, res: Response) => {
   });
 });
 
-/**
- * Routes d'authentification
- * Préfixe: /auth
- */
+
 app.use('/auth', authRoutes);
-
-// TODO: Ajouter d'autres routes ici plus tard
-// app.use('/servers', serverRoutes);
 app.use('/api/servers', serverRoutes);
-// Routes de channels
 app.use('/', channelRoutes);
-// app.use('/messages', messageRoutes);
-app.use('/api/messages', messageRoutes);
+app.use('/channels/:channelId/messages', messageRoutes);
+app.use('/', memberRoutes);
 
-/**
- * Route 404 - Route non trouvée
- */
+
 app.use((req: Request, res: Response) => {
   res.status(404).json({
     success: false,

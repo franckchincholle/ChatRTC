@@ -130,6 +130,8 @@ class SocketService {
    * Join a channel room
    */
   joinChannel(serverId: string, channelId: string): void {
+      console.log(`🔍 EMIT join_channel: serverId=${serverId}, channelId=${channelId}`);
+
     this.emit(SOCKET_EVENTS.JOIN_CHANNEL, { serverId, channelId });
   }
 
@@ -137,6 +139,8 @@ class SocketService {
    * Leave a channel room
    */
   leaveChannel(serverId: string, channelId: string): void {
+      console.log(`🔍 EMIT leave_channel: serverId=${serverId}, channelId=${channelId}`);
+
     this.emit(SOCKET_EVENTS.LEAVE_CHANNEL, { serverId, channelId });
   }
 

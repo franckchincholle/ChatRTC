@@ -2,6 +2,7 @@ import { RequestHandler } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { ServerService } from '../services/server.service';
 import { ServerIdParams, ServerMemberParams } from "../types/server.types";
+import { SocketManager } from '../sockets/socket.manager';
 
 
 export class ServerController {
@@ -73,6 +74,14 @@ export class ServerController {
       const { id: serverId, userId: targetUserId } = req.params;
       const { role } = req.body;
       const updatedMember = await this.serverService.updateMemberRole(serverId, req.user.id, targetUserId, role);
+
+      SocketManager.getIO()
+      .to(`server:${serverId}`)
+      .emit('member:role_updated', { 
+        userId: targetUserId, 
+        serverId, 
+        role 
+      });
       res.status(200).json({ success: true, data: updatedMember });
     } catch (error) { next(error); }
   };

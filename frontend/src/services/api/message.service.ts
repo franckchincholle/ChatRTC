@@ -1,43 +1,92 @@
+// // Message API Service
+// import { apiClient } from './client';
+// import { Message, SendMessageDTO } from '@/types/message.types';
+
+// export const messageService = {
+//   /**
+//    * Get messages for a channel
+//    */
+//   getByChannelId: async (
+//     channelId: string,
+//     limit?: number,
+//     before?: string
+//   ): Promise<Message[]> => {
+//     const params: Record<string, string> = {};
+//     if (limit) params.limit = limit.toString();
+//     if (before) params.before = before;
+
+//     return apiClient.get<Message[]>(`/channels/${channelId}/messages`, {
+//       params,
+//     });
+//   },
+
+//   /**
+//    * Send a message to a channel
+//    */
+//   send: async (channelId: string, data: SendMessageDTO): Promise<Message> => {
+//     return apiClient.post<Message>(`/channels/${channelId}/messages`, data);
+//   },
+
+//   /**
+//    * Delete a message
+//    */
+//   delete: async (messageId: string): Promise<void> => {
+//     return apiClient.delete<void>(`/messages/${messageId}`);
+//   },
+
+//   /**
+//    * Update/Edit a message
+//    */
+//   update: async (messageId: string, data: SendMessageDTO): Promise<Message> => {
+//     return apiClient.put<Message>(`/messages/${messageId}`, data);
+//   },
+// };
+
 // Message API Service
 import { apiClient } from './client';
+import { ApiResponse } from '@/types/api.types';
 import { Message, SendMessageDTO } from '@/types/message.types';
 
 export const messageService = {
   /**
-   * Get messages for a channel
+   * Récupérer les messages d'un channel
    */
-  getByChannelId: async (
-    channelId: string,
-    limit?: number,
-    before?: string
-  ): Promise<Message[]> => {
-    const params: Record<string, string> = {};
-    if (limit) params.limit = limit.toString();
-    if (before) params.before = before;
-
-    return apiClient.get<Message[]>(`/channels/${channelId}/messages`, {
-      params,
-    });
+  getByChannelId: async (channelId: string): Promise<Message[]> => {
+    const res = await apiClient.get<ApiResponse<Message[]>>(
+      `/channels/${channelId}/messages`
+    );
+    return res.data;
   },
 
   /**
-   * Send a message to a channel
+   * Envoyer un message dans un channel
    */
   send: async (channelId: string, data: SendMessageDTO): Promise<Message> => {
-    return apiClient.post<Message>(`/channels/${channelId}/messages`, data);
+    const res = await apiClient.post<ApiResponse<Message>>(
+      `/channels/${channelId}/messages`,
+      data
+    );
+    return res.data;
   },
 
   /**
-   * Delete a message
+   * Modifier un message
    */
-  delete: async (messageId: string): Promise<void> => {
-    return apiClient.delete<void>(`/messages/${messageId}`);
-  },
+  // update: async (channelId: string, messageId: string): Promise<Message> => {
+  //   const res = await apiClient.put<ApiResponse<Message>>(
+  //     `/channels/${channelId}/messages/${messageId}`,
+  //     data
+  //   );
+  //   return res.data;
+  // },
 
   /**
-   * Update/Edit a message
+   * Supprimer un message
    */
-  update: async (messageId: string, data: SendMessageDTO): Promise<Message> => {
-    return apiClient.put<Message>(`/messages/${messageId}`, data);
+  delete: async (channelId: string, messageId: string): Promise<void> => {
+    await apiClient.delete<ApiResponse<void>>(
+      `/channels/${channelId}/messages/${messageId}`
+    );
   },
+
 };

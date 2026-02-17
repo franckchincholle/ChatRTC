@@ -1,39 +1,70 @@
 'use client';
 
 import React from 'react';
-import { Member } from '@/types/member.types';
+import { Member, MemberRole } from '@/types/member.types';
 import { useMembers } from '@/hooks/useMembers';
-import { useServers } from '@/hooks/useServer';
 import { useAuth } from '@/hooks/useAuth';
-import { MemberRoleSelect } from './MemberRoleSelect';
 
 interface MemberItemProps {
   member: Member;
 }
 
+// Badge coloré selon le rôle
+const ROLE_LABELS: Record<MemberRole, string> = {
+  OWNER: 'Propriétaire',
+  ADMIN: 'Admin',
+  MEMBER: 'Membre',
+};
+
 export function MemberItem({ member }: MemberItemProps) {
   const { user } = useAuth();
-  const { selectedServer } = useServers();
-  const { members } = useMembers(selectedServer?.id || null);
+  const { members, updateMemberRole } = useMembers();
 
-  const currentUserRole = members.find(m => m.id === user?.id)?.role;
-  const isOwner = currentUserRole === 'owner';
-  const isSelf = member.id === user?.id;
+  const currentUser = members.find((m) => m.userId === user?.id);
+  const canManage = currentUser?.role === 'OWNER' || currentUser?.role === 'ADMIN';
+  const isSelf = member.userId === user?.id;
+  const canChangeRole = canManage && !isSelf && member.role !== 'OWNER';
+
+  const handleRoleChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newRole = e.target.value as MemberRole;
+    try {
+      await updateMemberRole(member.userId, newRole);
+    } catch (err) {
+      console.error('Failed to update role:', err);
+    }
+  };
 
   return (
     <div className="member-item">
+      {/* Indicateur de statut */}
+      <span
+        className={member.isOnline ? 'online-indicator' : 'offline-indicator'}
+        title={member.isOnline ? 'En ligne' : 'Hors ligne'}
+      >
+        ●
+      </span>
+
+      {/* Nom et rôle */}
       <div className="member-info">
-        <span className={member.isConnected ? 'online-indicator' : 'offline-indicator'}>
-          ●
+        <span className="member-name">
+          {member.username}
+          {isSelf && <span className="member-self"> (vous)</span>}
         </span>
-        <span className="member-name">{member.username}</span>
-        <span className="member-role">({member.role})</span>
+        <span className={`member-role member-role-${member.role.toLowerCase()}`}>
+          {ROLE_LABELS[member.role]}
+        </span>
       </div>
-      {isOwner && !isSelf && (
-        <MemberRoleSelect 
-          memberId={member.id} 
-          currentRole={member.role} 
-        />
+
+      {/* Changement de rôle */}
+      {canChangeRole && (
+        <select
+          className="member-role-select"
+          value={member.role}
+          onChange={handleRoleChange}
+        >
+          <option value="MEMBER">Membre</option>
+          <option value="ADMIN">Admin</option>
+        </select>
       )}
     </div>
   );
