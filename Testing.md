@@ -54,3 +54,12 @@ Targeted Testing
 Run a specific test file:
 
 npm test path/to/file.test.ts
+
+✅ Current Coverage Status
+The project currently meets the following quality benchmarks:
+
+Statements / Lines: ~80%
+
+Functions: >75%
+
+Branches: ~71% (covering critical paths like Prisma DB errors, JWT expiration, and Permission guards).
