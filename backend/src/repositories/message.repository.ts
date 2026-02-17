@@ -1,42 +1,51 @@
 import { prisma } from '../config/database';
-import { Message } from '@prisma/client';
+import { Prisma } from '@prisma/client';
+
+// ✅ Type qui reflète exactement ce que Prisma retourne avec le include author
+export type MessageWithAuthor = Prisma.MessageGetPayload<{
+  include: { author: { select: { id: true; username: true } } };
+}>;
+
+const messageInclude = {
+  author: {
+    select: { id: true, username: true },
+  },
+} satisfies Prisma.MessageInclude;
 
 export class MessageRepository {
-    async create(data: { content: string, channelId: string, userId: string }): Promise<Message> {
-        return prisma.message.create({
-            data,
-            include: {
-                author: {
-                    select: { id: true, username: true }
-                }
-            }
-        });
-    }
+  async create(data: {
+    content: string;
+    channelId: string;
+    userId: string;
+  }): Promise<MessageWithAuthor> {
+    return prisma.message.create({
+      data,
+      include: messageInclude,
+    });
+  }
 
-    async findByChannelId(channelId: string, limit = 50): Promise<Message[]> {
-        return prisma.message.findMany({
-            where: { channelId },
-            take: limit,
-            orderBy: { createdAt: 'desc' },
-            include: {
-                author: {
-                    select: { id: true, username: true }
-                }
-            }
-        });
-    }
+  async findByChannelId(channelId: string, limit = 50): Promise<MessageWithAuthor[]> {
+    return prisma.message.findMany({
+      where: { channelId },
+      take: limit,
+      orderBy: { createdAt: 'asc' }, // ✅ asc pour avoir les plus anciens en premier
+      include: messageInclude,
+    });
+  }
 
-    async findById(id: string): Promise<Message | null> {
-        return prisma.message.findUnique({
-            where: { id },
-        });
-    }
+  async findById(id: string): Promise<MessageWithAuthor | null> {
+    return prisma.message.findUnique({
+      where: { id },
+      include: messageInclude,
+    });
+  }
 
-    async delete(id: string): Promise<Message> {
-        return prisma.message.delete({
-            where: { id },
-        });
-    }
+  async delete(id: string): Promise<MessageWithAuthor> {
+    return prisma.message.delete({
+      where: { id },
+      include: messageInclude,
+    });
+  }
 }
 
 export const messageRepository = new MessageRepository();

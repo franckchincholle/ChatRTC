@@ -9,7 +9,8 @@ import { TypingIndicator } from './TypingIndicator';
 
 export function ChatArea() {
   const { selectedServer } = useServers();
-  const { selectedChannel } = useChannels(selectedServer?.id || null);
+  // ✅ Plus d'argument — le Context gère selectedServer en interne
+  const { selectedChannel } = useChannels();
 
   if (!selectedChannel) {
     return (
@@ -28,15 +29,15 @@ export function ChatArea() {
       <div className="chat-header">
         <h2 className="chat-title"># {selectedChannel.name}</h2>
       </div>
-      
-      <MessageList channelId={selectedChannel.id} />
-      
-      <TypingIndicator 
+
+      <MessageList />
+
+      <TypingIndicator
         serverId={selectedServer?.id || null}
-        channelId={selectedChannel.id} 
+        channelId={selectedChannel.id}
       />
-      
-      <MessageInput channelId={selectedChannel.id} />
+
+      <MessageInput />
     </div>
   );
 }

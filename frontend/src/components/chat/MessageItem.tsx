@@ -4,7 +4,6 @@ import React from 'react';
 import { Message } from '@/types/message.types';
 import { useMessages } from '@/hooks/useMessage';
 import { useAuth } from '@/hooks/useAuth';
-import { useMembers } from '@/hooks/useMembers';
 import { useServers } from '@/hooks/useServer';
 import { formatMessageTime } from '@/utils/formatDate';
 import { Button } from '@/components/ui/Button';
@@ -16,12 +15,12 @@ interface MessageItemProps {
 export function MessageItem({ message }: MessageItemProps) {
   const { user } = useAuth();
   const { selectedServer } = useServers();
-  const { members } = useMembers(selectedServer?.id || null);
-  const { deleteMessage } = useMessages(message.channelId);
+  // ✅ Plus d'argument channelId — le Context le gère
+  const { deleteMessage } = useMessages();
 
-  const currentUserRole = members.find(m => m.id === user?.id)?.role;
   const isOwner = message.userId === user?.id;
-  const canDelete = isOwner || currentUserRole === 'admin' || currentUserRole === 'owner';
+  const isServerOwner = user?.id === selectedServer?.ownerId;
+  const canDelete = isOwner || isServerOwner;
 
   const handleDelete = async () => {
     if (confirm('Supprimer ce message ?')) {
@@ -36,7 +35,7 @@ export function MessageItem({ message }: MessageItemProps) {
   return (
     <div className="message">
       <div className="message-header">
-        <span className="message-author">{message.username}</span>
+        <span className="message-author">{message.author.username}</span>
         <span className="message-time">{formatMessageTime(message.createdAt)}</span>
         {canDelete && (
           <div className="message-actions">

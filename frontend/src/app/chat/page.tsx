@@ -12,7 +12,7 @@ import { Spinner } from '@/components/ui/Spinner';
 
 export default function ChatPage() {
   const { isAuthenticated, isLoading } = useAuth();
-  const { connect } = useSocket();
+  const { connect, disconnect } = useSocket();
   const router = useRouter();
 
   // Rediriger vers /login si l'utilisateur n'est pas connecté
@@ -28,7 +28,10 @@ export default function ChatPage() {
     if (isAuthenticated) {
       connect();
     }
-  }, [isAuthenticated, connect]);
+    return () => {
+      if (!isAuthenticated) disconnect();
+    };
+  }, [isAuthenticated, connect, disconnect]);
 
   // Spinner uniquement pendant login/signup (opérations async)
   if (isLoading) {
