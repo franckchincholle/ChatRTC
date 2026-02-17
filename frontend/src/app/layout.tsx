@@ -26,7 +26,7 @@ export default function RootLayout({
         <AuthProvider>
           <ServerProvider>
             <ChannelProvider>
-              <MemberProvider>      {/* ← Ajoute */}
+              <MemberProvider>      
                 <MessageProvider>
                   {children}
                 </MessageProvider>

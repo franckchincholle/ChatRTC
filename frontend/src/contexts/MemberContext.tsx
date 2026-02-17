@@ -6,6 +6,7 @@ import { memberService } from '@/services/api/member.service';
 import { socketService } from '@/services/socket/socket.service';
 import { SOCKET_EVENTS } from '@/services/socket/events';
 import { useServersContext } from '@/contexts/ServerContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 // ============================================
 // TYPES
@@ -39,6 +40,7 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { selectedServer } = useServersContext();
+  const { user } = useAuth();
 
   // Charger les membres quand le serveur change
   useEffect(() => {
@@ -116,7 +118,6 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
   const loadMembers = useCallback(async (serverId?: string): Promise<void> => {
     const id = serverId ?? selectedServer?.id;
     if (!id) return;
-
     try {
       setIsLoading(true);
       setError(null);

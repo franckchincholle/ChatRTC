@@ -7,6 +7,7 @@ import { ServerRepository } from '../repositories/server.repository';
 export class SocketManager {
   private static io: ServerIO;
   private static serverRepository = new ServerRepository();
+  private static onlineUsers = new Map<string, Set<string>>();
 
   static init(httpServer: HTTPServer): ServerIO {
     this.io = new Server(httpServer, {
@@ -31,7 +32,11 @@ export class SocketManager {
         // 2. Rejoindre les rooms des serveurs
         userServers.forEach((server) => {
           socket.join(`server:${server.id}`);
-          socket.to(`server:${server.id}`).emit('user:status_changed', { userId, status: 'online' });
+          if (!this.onlineUsers.has(server.id)) {
+              this.onlineUsers.set(server.id, new Set());
+            }
+          this.onlineUsers.get(server.id)!.add(userId);
+          this.io.to(`server:${server.id}`).emit('user:status_changed', { userId, status: 'online' });
         });
 
         // 3. Room privée pour notifications directes
@@ -73,23 +78,32 @@ export class SocketManager {
         });
 
         /**
- * Rejoindre une room de serveur dynamiquement
- * (utile quand l'utilisateur crée ou rejoint un nouveau serveur)
- */
-socket.on('join_server', (data: { serverId: string }) => {
-  const serverRoom = `server:${data.serverId}`;
-  socket.join(serverRoom);
-  console.log(`🏠 User ${userId} a rejoint server room: ${data.serverId}`);
-});
+         * Rejoindre une room de serveur dynamiquement
+         * (utile quand l'utilisateur crée ou rejoint un nouveau serveur)
+         */
+        socket.on('join_server', (data: { serverId: string }) => {
+          const serverRoom = `server:${data.serverId}`;
+          socket.join(serverRoom);
+          if (!this.onlineUsers.has(data.serverId)) {
+            this.onlineUsers.set(data.serverId, new Set());
+          }
+          this.onlineUsers.get(data.serverId)!.add(userId);
+          console.log(`🏠 User ${userId} a rejoint server room: ${data.serverId}`);
+          this.io.to(serverRoom).emit('user:status_changed', {
+            userId,
+            status: 'online',
+          });
+        });
 
-/**
- * Quitter une room de serveur
- */
-socket.on('leave_server', (data: { serverId: string }) => {
-  const serverRoom = `server:${data.serverId}`;
-  socket.leave(serverRoom);
-  console.log(`🏠 User ${userId} a quitté server room: ${data.serverId}`);
-})
+        /**
+         * Quitter une room de serveur
+         */
+        socket.on('leave_server', (data: { serverId: string }) => {
+          const serverRoom = `server:${data.serverId}`;
+          socket.leave(serverRoom);
+          this.onlineUsers.get(data.serverId)?.delete(userId);
+          console.log(`🏠 User ${userId} a quitté server room: ${data.serverId}`);
+        })
 
         // ============================================
         // TYPING
@@ -118,6 +132,7 @@ socket.on('leave_server', (data: { serverId: string }) => {
         socket.on('disconnect', () => {
           console.log(`🔌 Utilisateur déconnecté : ${userId}`);
           userServers.forEach((server) => {
+            this.onlineUsers.get(server.id)?.delete(userId);
             this.io.to(`server:${server.id}`).emit('user:status_changed', {
               userId,
               status: 'offline',
@@ -131,6 +146,10 @@ socket.on('leave_server', (data: { serverId: string }) => {
     });
 
     return this.io;
+  }
+
+  static getOnlineUsers(serverId: string): string[] {
+    return Array.from(this.onlineUsers.get(serverId) || []);
   }
 
   static getIO(): ServerIO {
