@@ -1,9 +1,18 @@
 import { prisma } from '../config/database';
-import { ServerMember } from '@prisma/client';
+import { ServerMember, User } from '@prisma/client';
 
 /**
  * Repository pour les opérations sur les ServerMember
  */
+
+/**
+ * Type pour un ServerMember avec les infos user incluses
+ */
+export type ServerMemberWithUser = ServerMember & {
+  user: Pick<User, 'id' | 'username' | 'email'>;
+};
+
+
 export class ServerMemberRepository {
   /**
    * Trouver un membre par userId et serverId
@@ -49,14 +58,20 @@ export class ServerMemberRepository {
   /**
    * Récupérer tous les membres d'un serveur
    */
-  async findByServerId(serverId: string): Promise<ServerMember[]> {
+  async findByServerId(serverId: string): Promise<ServerMemberWithUser[]> {
     return prisma.serverMember.findMany({
       where: { serverId },
       include: {
-        user: true,
+        user: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+          },
+        },
       },
       orderBy: { joinedAt: 'asc' },
-    });
+    }) as unknown as ServerMemberWithUser[];  
   }
 
   /**

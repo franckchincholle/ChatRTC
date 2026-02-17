@@ -1,54 +1,47 @@
-// Member API Service
 import { apiClient } from './client';
-import { Member, UpdateMemberRoleDTO } from '@/types/member.types';
+import type { Member, MemberRole, UpdateMemberRoleDTO } from '@/types/member.types';
 
-export const memberService = {
+class MemberService {
   /**
-   * Get all members of a server
+   * Récupérer les membres d'un serveur
    */
-  getByServerId: async (serverId: string): Promise<Member[]> => {
-    return apiClient.get<Member[]>(`/servers/${serverId}/members`);
-  },
+  async getByServerId(serverId: string): Promise<Member[]> {
+    const response = await apiClient.get<{ data: { members: any[] } }>(
+      `/servers/${serverId}/members`
+    );
+    
+    // Transformer la réponse backend en Member frontend (avec isOnline = false par défaut)
+    return response.data.members.map((m) => ({
+      userId: m.userId,
+      serverId: m.serverId,
+      username: m.username,
+      role: m.role,
+      isOnline: m.isOnline,  // Sera mis à jour par Socket.IO
+      joinedAt: m.joinedAt,
+    }));
+  }
 
   /**
-   * Update a member's role
+   * Mettre à jour le rôle d'un membre
    */
-  updateRole: async (
+  async updateRole(
     serverId: string,
     userId: string,
     data: UpdateMemberRoleDTO
-  ): Promise<Member> => {
-    return apiClient.put<Member>(
-      `/servers/${serverId}/members/${userId}`,
+  ): Promise<Member> {
+    const response = await apiClient.put<{ data: any }>(
+      `/api/servers/${serverId}/members/${userId}`,
       data
     );
-  },
+    return {
+      userId: response.data.userId,
+      serverId: response.data.serverId,
+      username: response.data.user?.username || '',
+      role: response.data.role,
+      isOnline: false,
+      joinedAt: response.data.joinedAt,
+    };
+  }
+}
 
-  /**
-   * Kick a member from a server
-   */
-  kick: async (serverId: string, userId: string): Promise<void> => {
-    return apiClient.delete<void>(`/servers/${serverId}/members/${userId}`);
-  },
-
-  /**
-   * Ban a member from a server
-   */
-  ban: async (
-    serverId: string,
-    userId: string,
-    permanent?: boolean
-  ): Promise<void> => {
-    return apiClient.post<void>(`/servers/${serverId}/bans`, {
-      userId,
-      permanent,
-    });
-  },
-
-  /**
-   * Unban a member from a server
-   */
-  unban: async (serverId: string, userId: string): Promise<void> => {
-    return apiClient.delete<void>(`/servers/${serverId}/bans/${userId}`);
-  },
-};
+export const memberService = new MemberService();
