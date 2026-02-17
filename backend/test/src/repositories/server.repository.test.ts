@@ -5,7 +5,6 @@ jest.mock('../../../src/config/database', () => ({
   prisma: {
     server: { findUnique: jest.fn(), create: jest.fn(), update: jest.fn(), delete: jest.fn() },
     serverMember: { create: jest.fn(), update: jest.fn() },
-    // On améliore le mock de transaction pour supporter les tableaux de promesses
     $transaction: jest.fn((input) => {
       if (Array.isArray(input)) return Promise.all(input);
       return input(prisma);
@@ -24,7 +23,6 @@ describe('ServerRepository', () => {
     await repo.create({ name: 'Test' }, 'u1');
 
     expect(prisma.server.create).toHaveBeenCalled();
-    // Correction : prisma.create({ data: { ... } })
     expect(prisma.serverMember.create).toHaveBeenCalledWith({
       data: expect.objectContaining({ role: 'OWNER' })
     });

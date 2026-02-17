@@ -22,10 +22,9 @@ describe('MessageRepository', () => {
 
     await messageRepository.create(data);
 
-    // On s'attend à ce que prisma.create soit appelé avec data ET include
     expect(prisma.message.create).toHaveBeenCalledWith({
       data: data,
-      include: expect.any(Object), // On accepte le bloc include automatique
+      include: expect.any(Object),
     });
   });
 

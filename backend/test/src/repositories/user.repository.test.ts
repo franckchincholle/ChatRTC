@@ -1,5 +1,4 @@
 import { userRepository } from '../../../src/repositories/user.repository';
-// On importe le client Prisma pour pouvoir le mocker
 import { prisma } from '../../../src/config/database';
 
 jest.mock('../../../src/config/database', () => ({

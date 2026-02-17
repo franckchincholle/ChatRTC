@@ -25,7 +25,7 @@ describe('Socket Auth Middleware', () => {
 
     await socketAuthMiddleware(socket, next);
 
-    expect(socket.data.userId).toBe('u1'); // Correspond à socket.data.userId = user.id
+    expect(socket.data.userId).toBe('u1');
     expect(next).toHaveBeenCalledWith();
   });
 
@@ -33,7 +33,6 @@ describe('Socket Auth Middleware', () => {
     await socketAuthMiddleware(socket, next);
 
     expect(next).toHaveBeenCalledWith(expect.any(Error));
-    // Correction : Ton code renvoie bien "Token missing" avant le catch
     expect(next.mock.calls[0][0].message).toBe('Authentication error: Token missing');
   });
 

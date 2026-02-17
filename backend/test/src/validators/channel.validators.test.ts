@@ -5,11 +5,10 @@ import {
 } from '../../../src/validators/channel.validator';
 import { validationResult } from 'express-validator';
 
-// Mise à jour de la fonction utilitaire pour gérer params ET body
 const runValidation = async (validations: any[], data: any, params: any = {}) => {
   const req: any = { 
     body: data,
-    params: params // Ajout des paramètres d'URL (ex: serverId, id)
+    params: params
   };
   for (const validation of validations) {
     await validation.run(req);
@@ -18,13 +17,12 @@ const runValidation = async (validations: any[], data: any, params: any = {}) =>
 };
 
 describe('Channel Validator', () => {
-  // Un UUID valide pour passer les tests .isUUID()
   const validUUID = '550e8400-e29b-41d4-a716-446655440000';
 
   describe('createChannelValidation', () => {
     it('devrait valider un channel correct', async () => {
       const body = { name: 'general' };
-      const params = { serverId: validUUID }; // Injecté dans params
+      const params = { serverId: validUUID };
       
       const errors = await runValidation(createChannelValidation, body, params);
       

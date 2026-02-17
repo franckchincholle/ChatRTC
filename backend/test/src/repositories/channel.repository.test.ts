@@ -28,8 +28,7 @@ describe('ChannelRepository', () => {
   it('create: devrait créer un nouveau channel', async () => {
     const channelData = { name: 'annonces', serverId: 's1' };
     (prisma.channel.create as jest.Mock).mockResolvedValue({ id: 'c3', ...channelData });
-    
-    // On utilise le nom de méthode exact de ton repo : createChannel ou create
+
     await channelRepository.createChannel(channelData as any); 
     
     expect(prisma.channel.create).toHaveBeenCalledWith({

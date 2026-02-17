@@ -16,11 +16,9 @@ describe('Server Validator', () => {
   });
 
   it('createServerValidation: devrait échouer si le nom est manquant ou trop court', async () => {
-    // On teste avec une chaîne vide pour être sûr de déclencher .notEmpty() ou .isLength()
     const errors = await runValidation(createServerValidation, { name: '' });
     expect(errors.isEmpty()).toBe(false);
-    
-    // Teste aussi la limite basse (si ton code impose min: 3, alors 'a' échoue)
+
     const errorsShort = await runValidation(createServerValidation, { name: 'a' });
     expect(errorsShort.isEmpty()).toBe(false);
   });

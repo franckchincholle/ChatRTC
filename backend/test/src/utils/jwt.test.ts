@@ -4,7 +4,6 @@ import {
   verifyRefreshToken,
   verifyAccessToken,
 } from '../../../src/utils/jwt';
-import { UnauthorizedError } from '../../../src/utils/errors';
 
 describe('JWT Utils - Full Coverage', () => {
   const payload = { userId: '123', username: 'test', email: 't@t.com' };
@@ -25,12 +24,10 @@ describe('JWT Utils - Full Coverage', () => {
   });
 
   it('verifyAccessToken: devrait lever une erreur si le token est mal formé', () => {
-    // Teste la branche catch de verifyAccessToken (ligne 22 de ton code)
     expect(() => verifyAccessToken('token-invalide')).toThrow();
   });
 
   it('verifyRefreshToken: devrait lever une erreur spécifique pour un token expiré ou corrompu', () => {
-    // Teste la branche catch de verifyRefreshToken (ligne 41)
     try {
       verifyRefreshToken('malformed-token');
     } catch (e) {
@@ -42,14 +39,50 @@ describe('JWT Utils - Full Coverage', () => {
     const originalSecret = process.env.JWT_SECRET;
     const originalExpire = process.env.JWT_EXPIRES_IN;
 
-    // On simule l'absence de config pour tester les valeurs par défaut (fallback)
     delete process.env.JWT_EXPIRES_IN;
 
     const token = generateAccessToken(payload);
     expect(token).toBeDefined();
 
-    // Restauration de l'environnement
     process.env.JWT_SECRET = originalSecret;
     process.env.JWT_EXPIRES_IN = originalExpire;
+  });
+
+  it('verifyAccessToken: devrait entrer dans le catch si le token est malformé', () => {
+    expect(() => verifyAccessToken('pas-un-token')).toThrow();
+  });
+
+  it('verifyRefreshToken: devrait entrer dans le catch si le token est malformé', () => {
+    expect(() => verifyRefreshToken('pas-un-token')).toThrow();
+  });
+});
+
+describe('JWT Branch Coverage', () => {
+  it('verifyAccessToken: devrait entrer dans le catch si le token est invalide', () => {
+    expect(() => verifyAccessToken('token-malformé')).toThrow();
+  });
+
+  it('verifyRefreshToken: devrait entrer dans le catch si le token est invalide', () => {
+    expect(() => verifyRefreshToken('refresh-malformé')).toThrow();
+  });
+});
+
+describe('JWT Branch Coverage', () => {
+  it('verifyAccessToken: devrait entrer dans le catch si le token est corrompu', () => {
+    expect(() => verifyAccessToken('pas.un.token')).toThrow();
+  });
+
+  it('verifyRefreshToken: devrait entrer dans le catch si le token est expiré', () => {
+    expect(() => verifyRefreshToken('refresh.invalide.expired')).toThrow();
+  });
+});
+
+describe('JWT Erreurs Branches', () => {
+  it('verifyAccessToken: devrait throw si le token est invalide', () => {
+    expect(() => verifyAccessToken('invalid.token.here')).toThrow();
+  });
+
+  it('verifyRefreshToken: devrait throw si le token est expiré', () => {
+    expect(() => verifyRefreshToken('expired.token.here')).toThrow();
   });
 });

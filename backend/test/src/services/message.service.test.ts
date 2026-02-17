@@ -22,21 +22,17 @@ describe('MessageService', () => {
 
   describe('sendMessage', () => {
     it('devrait envoyer un message avec succès', async () => {
-      // Mock Channel
       (channelRepository.findById as jest.Mock).mockResolvedValue({
         id: 'c1',
         serverId: 's1',
       });
-      // Mock Member
       (serverMemberRepository.isMember as jest.Mock).mockResolvedValue(true);
-      // Mock Create
       const mockMsg = { id: 'm1', content: 'Hello' };
       (messageRepository.create as jest.Mock).mockResolvedValue(mockMsg);
 
       const result = await messageService.sendMessage('u1', 'c1', 'Hello');
 
       expect(result).toEqual(mockMsg);
-      // Vérifie que le socket a été appelé
       const { SocketManager } = require('../../../src/sockets/socket.manager');
       expect(SocketManager.getIO).toHaveBeenCalled();
     });
@@ -51,7 +47,6 @@ describe('MessageService', () => {
 
   describe('deleteMessage', () => {
     it('devrait supprimer si l utilisateur est l auteur', async () => {
-      // Correction : utiliser userId et non authorId pour matcher le service
       const mockMsg = { id: 'm1', userId: mockUserId, channelId: 'c1' };
       (messageRepository.findById as jest.Mock).mockResolvedValue(mockMsg);
       (channelRepository.findById as jest.Mock).mockResolvedValue({
@@ -59,7 +54,6 @@ describe('MessageService', () => {
         serverId: 's1',
       });
 
-      // Mock du membre demandeur et de l'auteur
       const mockMember = { userId: mockUserId, role: 'MEMBER' };
       (
         serverMemberRepository.findByUserAndServer as jest.Mock
@@ -113,7 +107,7 @@ describe('MessageService', () => {
 
       await expect(
         messageService.getChannelMessages('u1', 'c1')
-      ).rejects.toThrow(); // Devrait lever ForbiddenError
+      ).rejects.toThrow();
     });
   });
 });

@@ -6,7 +6,6 @@ import { authService } from '../../../src/services/auth.service';
 const app = express();
 app.use(express.json());
 
-// Définition des routes pour le test
 app.post('/auth/signup', (req, res, next) => authController.signup(req, res, next));
 app.post('/auth/login', (req, res, next) => authController.login(req, res, next));
 app.post('/auth/refresh', (req, res, next) => authController.refreshToken(req, res, next));
@@ -34,8 +33,7 @@ describe('Auth Controller', () => {
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
       expect(res.body.message).toBe('Connexion réussie');
-      
-      // CORRECTION : On vérifie dans res.body.data
+
       expect(res.body.data).toMatchObject({
         accessToken: 'at',
         refreshToken: 'rt'

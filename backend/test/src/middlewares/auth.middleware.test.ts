@@ -3,7 +3,6 @@ import * as jwt from '../../../src/utils/jwt';
 import { userRepository } from '../../../src/repositories/user.repository';
 import { UnauthorizedError } from '../../../src/utils/errors';
 
-// Mocks des dépendances
 jest.mock('../../../src/utils/jwt');
 jest.mock('../../../src/repositories/user.repository');
 
@@ -22,7 +21,6 @@ describe('Auth Middleware', () => {
   it('devrait appeler next avec UnauthorizedError si le header est absent', async () => {
     await authenticate(req, res, next);
 
-    // Correction du message selon ton retour de console : "Token manquant"
     expect(next).toHaveBeenCalledWith(expect.any(UnauthorizedError));
     expect(next.mock.calls[0][0].message).toBe('Token manquant');
   });
@@ -39,15 +37,13 @@ describe('Auth Middleware', () => {
     req.headers.authorization = 'Bearer mauvais_token';
     
     const jwtError = new Error('JWT Expired');
-    // On simule une erreur lors de la vérification du JWT
+
     (jwt.verifyAccessToken as jest.Mock).mockImplementation(() => {
       throw jwtError;
     });
 
     await authenticate(req, res, next);
 
-    // On utilise expect.anything() car ton code renvoie l'Error brute de JWT 
-    // plutôt que de la re-typer en UnauthorizedError
     expect(next).toHaveBeenCalledWith(expect.anything());
     expect(next).toHaveBeenCalledTimes(1);
   });
@@ -55,8 +51,7 @@ describe('Auth Middleware', () => {
   it('devrait appeler next avec UnauthorizedError si l utilisateur n existe plus en base', async () => {
     req.headers.authorization = 'Bearer valide';
     (jwt.verifyAccessToken as jest.Mock).mockReturnValue({ userId: 'user-999' });
-    
-    // L'utilisateur n'est pas trouvé dans le repository
+
     (userRepository.findById as jest.Mock).mockResolvedValue(null);
 
     await authenticate(req, res, next);
@@ -73,9 +68,8 @@ describe('Auth Middleware', () => {
 
     await authenticate(req, res, next);
 
-    // Vérifications de succès
     expect(req.user).toEqual(mockUser);
-    expect(next).toHaveBeenCalledWith(); // Pas d'argument = middleware validé
+    expect(next).toHaveBeenCalledWith();
     expect(next).toHaveBeenCalledTimes(1);
   });
 });

@@ -1,7 +1,6 @@
 import { signupValidation, loginValidation, refreshTokenValidation } from '../../../src/validators/auth.validator';
 import { validationResult } from 'express-validator';
 
-// Fonction utilitaire pour exécuter les validations sur un objet mocké
 const runValidation = async (validations: any[], data: any) => {
   const req: any = { body: data };
   for (const validation of validations) {
@@ -12,7 +11,6 @@ const runValidation = async (validations: any[], data: any) => {
 
 describe('Auth Validator', () => {
   describe('signupValidation', () => {
-    // --- Tes tests existants (CONSERVÉS) ---
     it('devrait valider un utilisateur correct', async () => {
       const data = { 
         username: 'testuser', 
@@ -42,7 +40,6 @@ describe('Auth Validator', () => {
       expect(errors.isEmpty()).toBe(false);
     });
 
-    // --- Nouveaux tests pour aller chercher les 10% de branches restants ---
     it('devrait échouer si le username contient des caractères spéciaux interdits', async () => {
       const data = { username: 'user@123!', email: 'test@t.com', password: 'Password123!' };
       const errors = await runValidation(signupValidation, data);
@@ -65,7 +62,6 @@ describe('Auth Validator', () => {
   });
 
   describe('loginValidation', () => {
-    // --- Tes tests existants (CONSERVÉS) ---
     it('devrait valider un login correct', async () => {
       const data = { email: 'test@example.com', password: 'anyPassword' };
       const errors = await runValidation(loginValidation, data);
@@ -78,7 +74,6 @@ describe('Auth Validator', () => {
       expect(errors.isEmpty()).toBe(false);
     });
 
-    // --- Branche supplémentaire pour le login ---
     it('devrait échouer si l email est manquant au login', async () => {
       const errors = await runValidation(loginValidation, { password: '123' });
       expect(errors.array().some(e => e.msg === "L'email est requis")).toBe(true);
@@ -86,7 +81,6 @@ describe('Auth Validator', () => {
   });
 
   describe('refreshTokenValidation', () => {
-    // --- Branche pour couvrir refreshTokenValidation ---
     it('devrait valider un refresh token correct', async () => {
       const errors = await runValidation(refreshTokenValidation, { refreshToken: 'valid-token' });
       expect(errors.isEmpty()).toBe(true);
