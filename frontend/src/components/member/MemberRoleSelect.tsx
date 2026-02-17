@@ -12,7 +12,7 @@ interface MemberRoleSelectProps {
 
 export function MemberRoleSelect({ memberId, currentRole }: MemberRoleSelectProps) {
   const { selectedServer } = useServers();
-  const { updateMemberRole } = useMembers(selectedServer?.id || null);
+  const { updateMemberRole } = useMembers();
 
   const handleChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newRole = e.target.value as MemberRole;
