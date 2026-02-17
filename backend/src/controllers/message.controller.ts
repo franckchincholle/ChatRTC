@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { messageService } from '../services/message.service';
+import { SocketManager } from '../sockets/socket.manager';
 
 export class MessageController {
   /**
@@ -13,6 +14,10 @@ export class MessageController {
       const { content } = req.body;
 
       const message = await messageService.sendMessage(userId, channelId, content);
+
+      SocketManager.getIO()
+        .to(`channel:${channelId}`)
+        .emit('message:received', message);
 
       res.status(201).json({ success: true, data: message });
     } catch (error) {
@@ -44,9 +49,16 @@ export class MessageController {
   async deleteMessage(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user.id;
-      const { messageId } = req.params as { messageId: string };
+      const { channelId, messageId } = req.params as { 
+        messageId: string,
+        channelId: string 
+      };
 
       await messageService.deleteMessage(userId, messageId);
+
+      SocketManager.getIO()
+        .to(`channel:${channelId}`)
+        .emit('message:deleted', { messageId, channelId });
 
       res.json({ success: true, message: 'Message supprimé avec succès' });
     } catch (error) {
