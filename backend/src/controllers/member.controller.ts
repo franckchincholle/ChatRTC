@@ -3,9 +3,6 @@ import { memberService } from '../services/member.service';
 import type { AuthenticatedRequest } from '../middlewares/auth.middleware';
 
 export class MemberController {
-  /**
-   * GET /servers/:serverId/members
-   */
   async getServerMembers(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = (req as AuthenticatedRequest).user.id;

@@ -15,7 +15,6 @@ interface CreateChannelModalProps {
 export function CreateChannelModal({ isOpen, onClose }: CreateChannelModalProps) {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
-  // ✅ Plus besoin de serverId en argument - le Context le gère
   const { createChannel, isLoading } = useChannels();
 
   const handleSubmit = async (e: React.FormEvent) => {

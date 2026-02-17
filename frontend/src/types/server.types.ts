@@ -1,5 +1,3 @@
-// Server types
-
 export interface Server {
   id: string;
   name: string;
@@ -28,7 +26,6 @@ export interface JoinServerDTO {
   inviteCode: string;
 }
 
-// ✅ Aligné avec la réponse du backend : { success: true, data: { code: "..." } }
 export interface InviteCodeResponse {
   code: string;
 }

@@ -8,10 +8,6 @@ import { SOCKET_EVENTS } from '@/services/socket/events';
 import { useServersContext } from '@/contexts/ServerContext';
 import { useAuth } from '@/contexts/AuthContext';
 
-// ============================================
-// TYPES
-// ============================================
-
 interface MemberContextType {
   members: Member[];
   onlineCount: number;
@@ -25,15 +21,7 @@ interface MemberContextType {
   clearError: () => void;
 }
 
-// ============================================
-// CONTEXT
-// ============================================
-
 const MemberContext = createContext<MemberContextType | null>(null);
-
-// ============================================
-// PROVIDER
-// ============================================
 
 export function MemberProvider({ children }: { children: React.ReactNode }) {
   const [members, setMembers] = useState<Member[]>([]);
@@ -42,7 +30,6 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
   const { selectedServer } = useServersContext();
   const { user } = useAuth();
 
-  // Charger les membres quand le serveur change
   useEffect(() => {
     if (selectedServer) {
       loadMembers(selectedServer.id);
@@ -51,13 +38,9 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
     }
   }, [selectedServer?.id]);
 
-  // ============================================
-  // ÉCOUTER LES ÉVÉNEMENTS SOCKET.IO
-  // ============================================
   useEffect(() => {
     if (!selectedServer) return;
 
-    // Statut online/offline d'un membre
     const handleStatusChanged = ({ userId, status }: { 
       userId: string; 
       status: 'online' | 'offline' 
@@ -71,17 +54,14 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
       );
     };
 
-    // Nouveau membre rejoint le serveur
     const handleMemberJoined = ({ userId, serverId }: { 
       userId: string; 
       serverId: string 
     }) => {
       if (serverId !== selectedServer.id) return;
-      // Recharger la liste complète pour avoir les infos du nouveau membre
       loadMembers(selectedServer.id);
     };
 
-    // Membre quitte le serveur
     const handleMemberLeft = ({ userId, serverId }: { 
       userId: string; 
       serverId: string 
@@ -90,7 +70,6 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
       setMembers((prev) => prev.filter((m) => m.userId !== userId));
     };
 
-    // Rôle mis à jour
     const handleRoleUpdated = ({ userId, serverId, role }: { 
       userId: string; 
       serverId: string; 
@@ -138,7 +117,6 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
     try {
       setError(null);
       await memberService.updateRole(selectedServer.id, userId, { role });
-      // La mise à jour viendra via Socket.IO MEMBER_ROLE_UPDATED
     } catch (err: any) {
       setError(err.message || 'Échec de la mise à jour du rôle');
       throw err;
@@ -147,13 +125,11 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
 
   const clearError = useCallback(() => setError(null), []);
 
-  // Membres triés : OWNER → ADMIN → MEMBER, puis online avant offline
   const sortedMembers = [...members].sort((a, b) => {
     const roleOrder = { OWNER: 0, ADMIN: 1, MEMBER: 2 };
     if (roleOrder[a.role] !== roleOrder[b.role]) {
       return roleOrder[a.role] - roleOrder[b.role];
     }
-    // À rôle égal, online en premier
     return Number(b.isOnline) - Number(a.isOnline);
   });
 
@@ -177,10 +153,6 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
     </MemberContext.Provider>
   );
 }
-
-// ============================================
-// HOOK
-// ============================================
 
 export function useMembersContext(): MemberContextType {
   const context = useContext(MemberContext);

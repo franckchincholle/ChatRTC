@@ -19,7 +19,6 @@ export function LoginForm() {
     e.preventDefault();
     setErrors({});
 
-    // Validation
     const emailValidation = validateEmail(email);
     const passwordValidation = validatePassword(password);
 
@@ -35,7 +34,6 @@ export function LoginForm() {
       await login({ email, password });
       router.push('/chat');
     } catch (err) {
-      // Error is handled by the hook
     }
   };
 

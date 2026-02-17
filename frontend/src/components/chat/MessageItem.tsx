@@ -15,7 +15,6 @@ interface MessageItemProps {
 export function MessageItem({ message }: MessageItemProps) {
   const { user } = useAuth();
   const { selectedServer } = useServers();
-  // ✅ Plus d'argument channelId — le Context le gère
   const { deleteMessage } = useMessages();
 
   const isOwner = message.userId === user?.id;

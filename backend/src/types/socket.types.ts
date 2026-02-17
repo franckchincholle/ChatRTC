@@ -1,9 +1,7 @@
 import { Server as SocketIOServer, Socket as SocketIOSocket } from 'socket.io';
 import { ChannelResponse } from './channel.types';
 
-// ============================================
 // EVENTS : Client → Serveur
-// ============================================
 export interface ListenEvents {
   'join_server': (data: { serverId: string }) => void;   // ← Ajoute
   'leave_server': (data: { serverId: string }) => void;
@@ -15,9 +13,7 @@ export interface ListenEvents {
   'user:stop_typing': (data: { channelId: string; serverId: string }) => void;
 }
 
-// ============================================
 // EVENTS : Serveur → Client
-// ============================================
 export interface EmitEvents {
   // Messages
   'message:received': (message: any) => void;

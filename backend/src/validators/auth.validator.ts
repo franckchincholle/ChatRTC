@@ -1,10 +1,9 @@
 import { body } from 'express-validator';
 
-// 1. Validation pour signup
+
 export const signupValidation = [
-  // Validation du username
   body('username')
-    .trim() // Enlève les espaces au début et à la fin
+    .trim() 
     .notEmpty()
     .withMessage('Le nom d\'utilisateur est requis')
     .isLength({ min: 3, max: 50 })
@@ -12,16 +11,14 @@ export const signupValidation = [
     .matches(/^[a-zA-Z0-9_-]+$/)
     .withMessage('Le nom d\'utilisateur ne peut contenir que des lettres, chiffres, tirets et underscores'),
 
-  // Validation de l'email
   body('email')
     .trim()
     .notEmpty()
     .withMessage('L\'email est requis')
     .isEmail()
     .withMessage('L\'email n\'est pas valide')
-    .normalizeEmail(), // Normalise l'email (lowercase, etc.)
+    .normalizeEmail(), 
 
-  // Validation du password
   body('password')
     .notEmpty()
     .withMessage('Le mot de passe est requis')
@@ -32,9 +29,7 @@ export const signupValidation = [
 ];
 
 
-// 2. Validation pour login
 export const loginValidation = [
-  // Validation de l'email
   body('email')
     .trim()
     .notEmpty()
@@ -43,17 +38,10 @@ export const loginValidation = [
     .withMessage('L\'email n\'est pas valide')
     .normalizeEmail(),
 
-  // Validation du password
   body('password')
     .notEmpty()
     .withMessage('Le mot de passe est requis'),
-  
-  // Note : On ne valide PAS la complexité du mot de passe au login
-  // car on veut juste vérifier qu'il y a quelque chose
 ];
-
-
-// 3. Validation pour refresh token (pour la route POST /auth/refresh)
 
 export const refreshTokenValidation = [
   body('refreshToken')

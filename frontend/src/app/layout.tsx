@@ -22,7 +22,6 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body>
-        {/* Ordre important : chaque Provider utilise les Providers parents */}
         <AuthProvider>
           <ServerProvider>
             <ChannelProvider>

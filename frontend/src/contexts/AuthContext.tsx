@@ -5,10 +5,6 @@ import { User, LoginDTO, SignupDTO } from '@/types/user.types';
 import { authService } from '@/services/api/auth.service';
 import { storage } from '@/utils/storage';
 
-// ============================================
-// TYPES
-// ============================================
-
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
@@ -20,16 +16,7 @@ interface AuthContextType {
   clearError: () => void;
 }
 
-// ============================================
-// CONTEXT
-// ============================================
-
 const AuthContext = createContext<AuthContextType | null>(null);
-
-// ============================================
-// INITIALISATION SYNCHRONE
-// Lire le token AVANT le premier render pour éviter la race condition
-// ============================================
 
 function getInitialAuthState(): { user: User | null; isAuthenticated: boolean } {
   if (typeof window === 'undefined') {
@@ -47,10 +34,6 @@ function getInitialAuthState(): { user: User | null; isAuthenticated: boolean } 
   return { user: null, isAuthenticated: false };
 }
 
-// ============================================
-// PROVIDER
-// ============================================
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const initialState = getInitialAuthState();
   const [user, setUser] = useState<User | null>(initialState.user);
@@ -63,7 +46,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(true);
       setError(null);
 
-      // authService.login retourne maintenant directement AuthData (sans wrapper)
       const authData = await authService.login(data);
 
       storage.setToken(authData.accessToken);
@@ -122,10 +104,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     </AuthContext.Provider>
   );
 }
-
-// ============================================
-// HOOK
-// ============================================
 
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);

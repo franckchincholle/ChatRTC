@@ -16,7 +16,6 @@ export function MessageInput() {
   const { user } = useAuth();
   const { selectedServer } = useServers();
   const { selectedChannel } = useChannels();
-  // ✅ Plus d'argument — le Context gère selectedChannel en interne
   const { sendMessage } = useMessages();
   const { startTyping, stopTyping } = useTyping(
     selectedServer?.id || null,

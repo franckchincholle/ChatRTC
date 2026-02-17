@@ -1,11 +1,6 @@
 import { body, param } from 'express-validator';
 
-/**
- * Validation pour créer un channel
- * POST /servers/:serverId/channels
- */
 export const createChannelValidation = [
-  // Validation du serverId dans l'URL
   param('serverId')
     .trim()
     .notEmpty()
@@ -13,7 +8,6 @@ export const createChannelValidation = [
     .isUUID()
     .withMessage('L\'ID du serveur doit être un UUID valide'),
 
-  // Validation du nom du channel
   body('name')
     .trim()
     .notEmpty()
@@ -24,10 +18,6 @@ export const createChannelValidation = [
     .withMessage('Le nom du channel ne peut contenir que des lettres, chiffres, tirets et underscores'),
 ];
 
-/**
- * Validation pour récupérer les channels d'un serveur
- * GET /servers/:serverId/channels
- */
 export const getChannelsByServerValidation = [
   param('serverId')
     .trim()
@@ -37,10 +27,6 @@ export const getChannelsByServerValidation = [
     .withMessage('L\'ID du serveur doit être un UUID valide'),
 ];
 
-/**
- * Validation pour récupérer un channel par ID
- * GET /channels/:id
- */
 export const getChannelByIdValidation = [
   param('id')
     .trim()
@@ -50,12 +36,7 @@ export const getChannelByIdValidation = [
     .withMessage('L\'ID du channel doit être un UUID valide'),
 ];
 
-/**
- * Validation pour mettre à jour un channel
- * PUT /channels/:id
- */
 export const updateChannelValidation = [
-  // Validation de l'ID dans l'URL
   param('id')
     .trim()
     .notEmpty()
@@ -63,7 +44,6 @@ export const updateChannelValidation = [
     .isUUID()
     .withMessage('L\'ID du channel doit être un UUID valide'),
 
-  // Validation du nom
   body('name')
     .trim()
     .notEmpty()
@@ -74,10 +54,6 @@ export const updateChannelValidation = [
     .withMessage('Le nom du channel ne peut contenir que des lettres, chiffres, tirets et underscores'),
 ];
 
-/**
- * Validation pour supprimer un channel
- * DELETE /channels/:id
- */
 export const deleteChannelValidation = [
   param('id')
     .trim()

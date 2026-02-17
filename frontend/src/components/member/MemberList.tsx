@@ -23,7 +23,6 @@ export function MemberList() {
         </h3>
       </div>
 
-      {/* Membres en ligne */}
       {onlineMembers.length > 0 && (
         <div className="members-group">
           <div className="members-group-title">
@@ -35,7 +34,6 @@ export function MemberList() {
         </div>
       )}
 
-      {/* Membres hors ligne */}
       {offlineMembers.length > 0 && (
         <div className="members-group">
           <div className="members-group-title">

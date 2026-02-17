@@ -24,7 +24,6 @@ export function SignupForm() {
     e.preventDefault();
     setErrors({});
 
-    // Validation
     const emailValidation = validateEmail(email);
     const usernameValidation = validateUsername(username);
     const passwordValidation = validatePassword(password);
@@ -42,7 +41,6 @@ export function SignupForm() {
       await signup({ email, username, password });
       router.push('/chat');
     } catch (err) {
-      // Error is handled by the hook
     }
   };
 

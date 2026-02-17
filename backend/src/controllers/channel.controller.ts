@@ -18,7 +18,6 @@ export class ChannelController {
 
       const channel = await channelService.createChannel(userId, channelData);
 
-      // ✅ Émettre à tous les membres du serveur
       SocketManager.getIO()
         .to(`server:${serverId}`)
         .emit('channel:created', channel);
@@ -74,7 +73,6 @@ export class ChannelController {
 
       const channel = await channelService.updateChannel(userId, id, updateData);
 
-      // ✅ Émettre à tous les membres du serveur
       SocketManager.getIO()
         .to(`server:${channel.serverId}`)
         .emit('channel:updated', channel);
@@ -94,12 +92,10 @@ export class ChannelController {
       const userId = (req as AuthenticatedRequest).user.id;
       const { id } = req.params as { id: string };
 
-      // Récupérer le channel AVANT de le supprimer pour avoir le serverId
       const channel = await channelService.getChannelById(userId, id);
 
       await channelService.deleteChannel(userId, id);
 
-      // ✅ Émettre à tous les membres du serveur
       SocketManager.getIO()
         .to(`server:${channel.serverId}`)
         .emit('channel:deleted', { 

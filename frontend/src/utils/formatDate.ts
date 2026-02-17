@@ -1,5 +1,3 @@
-// Date formatting utilities
-
 export function formatMessageTime(date: string | Date): string {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   return dateObj.toLocaleTimeString('fr-FR', {

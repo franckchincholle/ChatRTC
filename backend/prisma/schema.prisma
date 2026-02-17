@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../node_modules/.prisma/client"
@@ -18,42 +12,42 @@ model User {
   id        String   @id @default(uuid())
   username  String   @unique
   email     String   @unique
-  password  String   // Hash bcrypt, jamais en clair !
+  password  String   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
-  ownedServers      Server[]        @relation("OwnedServers")      // Servers que j'ai créés
-  serverMemberships ServerMember[]  @relation("UserMemberships")   // Servers dont je suis membre
-  messages          Message[]       @relation("UserMessages")      // Messages que j'ai écrits
+  ownedServers      Server[]        @relation("OwnedServers")      
+  serverMemberships ServerMember[]  @relation("UserMemberships")   
+  messages          Message[]       @relation("UserMessages")      
 }
 
 model Server {
   id        String   @id @default(uuid())
   name      String   @unique 
-  ownerId   String   // Référence vers l'User qui a créé ce server
+  ownerId   String   
   createdAt DateTime @default(now()) 
   updatedAt DateTime @updatedAt
 
   // Relations
   owner       User           @relation("OwnedServers", fields: [ownerId], references: [id])
-  channels    Channel[]      @relation("OwnedChannels")       // Channels de ce server
-  members     ServerMember[] @relation("ServerMemberships")   // Membres de ce server
-  invitations Invitation[]   @relation("ServerInvitations")   // Codes d'invitation
+  channels    Channel[]      @relation("OwnedChannels")       
+  members     ServerMember[] @relation("ServerMemberships")   
+  invitations Invitation[]   @relation("ServerInvitations")   
 }
 
 model Channel {
   id        String   @id @default(uuid())
   name      String   
-  serverId  String   // Référence vers le Server parent
+  serverId  String   
   createdAt DateTime @default(now()) 
   updatedAt DateTime @updatedAt
 
   // Relations
   server   Server    @relation("OwnedChannels", fields: [serverId], references: [id], onDelete: Cascade)
-  messages Message[] @relation("ChannelMessages")  // Messages dans ce channel
+  messages Message[] @relation("ChannelMessages")  
 
-  // Contrainte : pas deux channels avec le même nom dans un server
+  // Contrainte 
   @@unique([serverId, name])
 }
 
@@ -81,15 +75,15 @@ model ServerMember {
   user   User   @relation("UserMemberships", fields: [userId], references: [id], onDelete: Cascade)
   server Server @relation("ServerMemberships", fields: [serverId], references: [id], onDelete: Cascade)
 
-  // Contrainte : un user ne peut être qu'une fois dans un server
+  // Contrainte 
   @@unique([userId, serverId])
 }
 
 model Invitation {
   id        String    @id @default(uuid())
-  code      String    @unique          // Le code à partager (ex: "XYZ123")
-  serverId  String                     // Pour quel server ?
-  expiresAt DateTime?                  // Date d'expiration (optionnelle d'où le "?")
+  code      String    @unique          
+  serverId  String                     
+  expiresAt DateTime?                  
   createdAt DateTime  @default(now())
 
   // Relations

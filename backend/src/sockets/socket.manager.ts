@@ -26,10 +26,8 @@ export class SocketManager {
       console.log(`🔡 Utilisateur connecté : ${userId}`);
 
       try {
-        // 1. Récupérer les serveurs de l'utilisateur
         const userServers = await this.serverRepository.findByUserId(userId);
 
-        // 2. Rejoindre les rooms des serveurs
         userServers.forEach((server) => {
           socket.join(`server:${server.id}`);
           if (!this.onlineUsers.has(server.id)) {
@@ -39,24 +37,15 @@ export class SocketManager {
           this.io.to(`server:${server.id}`).emit('user:status_changed', { userId, status: 'online' });
         });
 
-        // 3. Room privée pour notifications directes
         socket.join(`user:${userId}`);
 
         console.log(`🔗 User ${userId} a rejoint ${userServers.length} serveurs`);
 
-        // ============================================
         // GESTION DES CHANNELS
-        // ============================================
 
         socket.on('join_channel', (data: { serverId: string, channelId: string }) => {
           const channelRoom = `channel:${data.channelId}`;
           socket.join(channelRoom);
-          // 🔍 DEBUG
-          console.log(`📺 JOIN_CHANNEL reçu:`);
-          console.log(`  - userId: ${userId}`);
-          console.log(`  - channelId: ${data.channelId}`);
-          console.log(`  - room: ${channelRoom}`);
-          console.log(`  - Toutes les rooms du socket: ${[...socket.rooms].join(', ')}`);
 
           socket.to(channelRoom).emit('channel:user_joined', {
             userId,
@@ -77,10 +66,6 @@ export class SocketManager {
           });
         });
 
-        /**
-         * Rejoindre une room de serveur dynamiquement
-         * (utile quand l'utilisateur crée ou rejoint un nouveau serveur)
-         */
         socket.on('join_server', (data: { serverId: string }) => {
           const serverRoom = `server:${data.serverId}`;
           socket.join(serverRoom);
@@ -95,19 +80,12 @@ export class SocketManager {
           });
         });
 
-        /**
-         * Quitter une room de serveur
-         */
         socket.on('leave_server', (data: { serverId: string }) => {
           const serverRoom = `server:${data.serverId}`;
           socket.leave(serverRoom);
           this.onlineUsers.get(data.serverId)?.delete(userId);
           console.log(`🏠 User ${userId} a quitté server room: ${data.serverId}`);
         })
-
-        // ============================================
-        // TYPING
-        // ============================================
 
         socket.on('user:typing', (data: { channelId: string, serverId: string }) => {
           socket.to(`channel:${data.channelId}`).emit('user:typing', {
@@ -124,10 +102,6 @@ export class SocketManager {
             user: { userId, username },
           });
         });
-
-        // ============================================
-        // DÉCONNEXION
-        // ============================================
 
         socket.on('disconnect', () => {
           console.log(`🔌 Utilisateur déconnecté : ${userId}`);

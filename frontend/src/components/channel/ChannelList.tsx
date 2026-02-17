@@ -14,16 +14,13 @@ export function ChannelList() {
   const { user } = useAuth();
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  // L'owner est celui dont l'id correspond à ownerId du serveur
   const isOwner = user?.id === selectedServer?.ownerId;
-  // Pour l'instant on considère que seul l'owner peut gérer les channels
-  // (la logique admin sera affinée avec useMembers une fois connecté)
+
   const canManageChannels = isOwner;
 
   const handleInvite = async () => {
     if (!selectedServer) return;
     try {
-      // ✅ generateInviteCode vient du hook, pas appelé à l'intérieur du handler
       const code = await generateInviteCode(selectedServer.id);
       alert(`Code d'invitation : ${code}`);
     } catch (err) {

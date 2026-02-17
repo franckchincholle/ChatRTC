@@ -17,7 +17,7 @@ export class MemberService {
     return members.map((member) => ({
       userId: member.userId,
       serverId: member.serverId,
-      username: member.user.username,  // ✅ Plus d'erreur
+      username: member.user.username,  
       role: member.role as 'OWNER' | 'ADMIN' | 'MEMBER',
       joinedAt: member.joinedAt.toISOString(),
       isOnline: onlineUsers.includes(member.userId),

@@ -1,7 +1,6 @@
 import { prisma } from '../config/database';
 import { Prisma } from '@prisma/client';
 
-// ✅ Type qui reflète exactement ce que Prisma retourne avec le include author
 export type MessageWithAuthor = Prisma.MessageGetPayload<{
   include: { author: { select: { id: true; username: true } } };
 }>;
@@ -28,7 +27,7 @@ export class MessageRepository {
     return prisma.message.findMany({
       where: { channelId },
       take: limit,
-      orderBy: { createdAt: 'asc' }, // ✅ asc pour avoir les plus anciens en premier
+      orderBy: { createdAt: 'asc' }, 
       include: messageInclude,
     });
   }

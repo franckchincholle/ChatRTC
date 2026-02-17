@@ -1,4 +1,3 @@
-// API Client configuration
 import { API_URL } from '@/utils/constants';
 import { storage } from '@/utils/storage';
 
@@ -34,7 +33,6 @@ class ApiClient {
 
     let url = `${this.baseURL}${endpoint}`;
 
-    // Add query parameters if any
     if (params) {
       const queryString = new URLSearchParams(params).toString();
       url += `?${queryString}`;
@@ -55,7 +53,6 @@ class ApiClient {
       throw new Error(error.message || `HTTP Error: ${response.status}`);
     }
 
-    // Handle 204 No Content
     if (response.status === 204) {
       return {} as T;
     }

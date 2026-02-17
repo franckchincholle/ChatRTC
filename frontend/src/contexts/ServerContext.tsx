@@ -6,10 +6,6 @@ import { serverService } from '@/services/api/server.service';
 import { socketService } from '@/services/socket/socket.service';
 import { useAuth } from '@/contexts/AuthContext';
 
-// ============================================
-// TYPES
-// ============================================
-
 interface ServerContextType {
   servers: Server[];
   selectedServer: Server | null;
@@ -26,15 +22,9 @@ interface ServerContextType {
   clearError: () => void;
 }
 
-// ============================================
-// CONTEXT
-// ============================================
 
 const ServerContext = createContext<ServerContextType | null>(null);
 
-// ============================================
-// PROVIDER
-// ============================================
 
 export function ServerProvider({ children }: { children: React.ReactNode }) {
   const [servers, setServers] = useState<Server[]>([]);
@@ -43,7 +33,6 @@ export function ServerProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const { isAuthenticated } = useAuth();
 
-  // Charger les serveurs dès que l'utilisateur est authentifié
   useEffect(() => {
     if (isAuthenticated) {
       loadServers();
@@ -157,12 +146,10 @@ export function ServerProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const selectServer = useCallback((server: Server | null) => {
-    // Quitter la room Socket.IO de l'ancien serveur
     if (selectedServer) {
       socketService.leaveServer(selectedServer.id);
     }
     setSelectedServer(server);
-    // Rejoindre la room Socket.IO du nouveau serveur
     if (server) {
       socketService.joinServer(server.id);
     }
@@ -192,10 +179,6 @@ export function ServerProvider({ children }: { children: React.ReactNode }) {
     </ServerContext.Provider>
   );
 }
-
-// ============================================
-// HOOK INTERNE
-// ============================================
 
 export function useServersContext(): ServerContextType {
   const context = useContext(ServerContext);

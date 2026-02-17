@@ -1,4 +1,3 @@
-// Socket types
 import { Message } from './message.types';
 import { Member } from './member.types';
 import { Channel } from './channel.types';
@@ -8,7 +7,6 @@ export interface TypingUser {
   username: string;
 }
 
-// Socket event payloads
 export interface SocketMessage {
   event: string;
   data: any;

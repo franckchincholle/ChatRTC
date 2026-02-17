@@ -9,7 +9,6 @@ interface MemberItemProps {
   member: Member;
 }
 
-// Badge coloré selon le rôle
 const ROLE_LABELS: Record<MemberRole, string> = {
   OWNER: 'Propriétaire',
   ADMIN: 'Admin',
@@ -36,7 +35,6 @@ export function MemberItem({ member }: MemberItemProps) {
 
   return (
     <div className="member-item">
-      {/* Indicateur de statut */}
       <span
         className={member.isOnline ? 'online-indicator' : 'offline-indicator'}
         title={member.isOnline ? 'En ligne' : 'Hors ligne'}
@@ -44,7 +42,6 @@ export function MemberItem({ member }: MemberItemProps) {
         ●
       </span>
 
-      {/* Nom et rôle */}
       <div className="member-info">
         <span className="member-name">
           {member.username}
@@ -55,7 +52,6 @@ export function MemberItem({ member }: MemberItemProps) {
         </span>
       </div>
 
-      {/* Changement de rôle */}
       {canChangeRole && (
         <select
           className="member-role-select"

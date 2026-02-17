@@ -1,4 +1,3 @@
-// Validateurs pour Server
 import { body } from 'express-validator';
 
 export const createServerValidation = [

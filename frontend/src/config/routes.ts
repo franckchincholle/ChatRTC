@@ -1,4 +1,3 @@
-// Application routes
 export const ROUTES = {
   HOME: '/',
   LOGIN: '/auth/login',

@@ -14,7 +14,6 @@ interface ChannelItemProps {
 }
 
 export function ChannelItem({ channel, isSelected, onSelect, canManage }: ChannelItemProps) {
-  // ✅ Plus besoin de serverId en argument - le Context le gère
   const { updateChannel, deleteChannel } = useChannels();
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(channel.name);

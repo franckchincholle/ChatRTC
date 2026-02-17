@@ -4,10 +4,8 @@ import { authenticate } from '../middlewares/auth.middleware';
 
 const router = Router({ mergeParams: true });
 
-// authentication
 router.use(authenticate);
 
-// message routes
 router.post('/', messageController.sendMessage);
 router.get('/', messageController.getMessages);
 router.delete('/:messageId', messageController.deleteMessage);

@@ -1,4 +1,3 @@
-// Channel types
 export interface Channel {
   id: string;
   name: string;

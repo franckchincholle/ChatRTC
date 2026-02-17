@@ -31,7 +31,6 @@ export function ChannelProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const { selectedServer } = useServersContext();
 
-  // Charger les channels quand le serveur change
   useEffect(() => {
     if (selectedServer) {
       loadChannels(selectedServer.id);
@@ -42,19 +41,13 @@ export function ChannelProvider({ children }: { children: React.ReactNode }) {
     }
   }, [selectedServer?.id]);
 
-  // ============================================
-  // ✅ ÉCOUTER LES ÉVÉNEMENTS SOCKET.IO
-  // ============================================
   useEffect(() => {
     if (!selectedServer) return;
 
-    // Channel créé par quelqu'un d'autre
     const handleChannelCreated = (channel: Channel) => {
       console.log('🆕 Channel créé via Socket:', channel.name);
-      // Vérifier que le channel appartient au serveur sélectionné
       if (channel.serverId === selectedServer.id) {
         setChannels((prev) => {
-          // Éviter les doublons si c'est nous qui l'avons créé
           const exists = prev.find((c) => c.id === channel.id);
           if (exists) return prev;
           return [...prev, channel];
@@ -62,21 +55,18 @@ export function ChannelProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    // Channel mis à jour
     const handleChannelUpdated = (channel: Channel) => {
       console.log('✏️ Channel mis à jour via Socket:', channel.name);
       if (channel.serverId === selectedServer.id) {
         setChannels((prev) =>
           prev.map((c) => (c.id === channel.id ? channel : c))
         );
-        // Mettre à jour selectedChannel si c'est celui qui est ouvert
         setSelectedChannel((prev) =>
           prev?.id === channel.id ? channel : prev
         );
       }
     };
 
-    // Channel supprimé
     const handleChannelDeleted = ({ channelId, serverId }: { channelId: string; serverId: string }) => {
       console.log('🗑️ Channel supprimé via Socket:', channelId);
       if (serverId === selectedServer.id) {
@@ -133,9 +123,6 @@ export function ChannelProvider({ children }: { children: React.ReactNode }) {
       setError(null);
       const newChannel = await channelService.create(selectedServer.id, { name });
       
-      // ✅ Ajouter directement pour le créateur
-      // Pour les autres membres, Socket.IO via handleChannelCreated s'en charge
-      // handleChannelCreated vérifie les doublons donc pas de risque
       setChannels((prev) => {
         const exists = prev.find((c) => c.id === newChannel.id);
         if (exists) return prev;
@@ -156,7 +143,6 @@ export function ChannelProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(true);
       setError(null);
       const updatedChannel = await channelService.update(id, { name });
-      // ✅ Ne pas mettre à jour ici : Socket.IO va recevoir channel:updated
       return updatedChannel;
     } catch (err: any) {
       setError(err.message || 'Échec de la mise à jour du canal');
@@ -171,7 +157,6 @@ export function ChannelProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(true);
       setError(null);
       await channelService.delete(id);
-      // ✅ Ne pas supprimer ici : Socket.IO va recevoir channel:deleted
     } catch (err: any) {
       setError(err.message || 'Échec de la suppression du canal');
       throw err;

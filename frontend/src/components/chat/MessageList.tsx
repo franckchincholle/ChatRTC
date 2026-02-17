@@ -6,11 +6,9 @@ import { MessageItem } from './MessageItem';
 import { Spinner } from '@/components/ui/Spinner';
 
 export function MessageList() {
-  // ✅ Plus d'argument — le Context gère selectedChannel en interne
   const { messages, isLoading } = useMessages();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll vers le bas à chaque nouveau message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);

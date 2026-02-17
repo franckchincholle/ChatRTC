@@ -60,44 +60,6 @@ export class ServerRepository {
     });
   }
 
-  // async addMember(serverId: string, userId: string, role: 'OWNER' | 'ADMIN' | 'MEMBER' = 'MEMBER'): Promise<ServerMember> {
-  //   const member = await prisma.serverMember.create({
-  //     data: {
-  //       serverId,
-  //       userId,
-  //       role
-  //     },
-  //   });
-  //   return member as ServerMember;
-  // }
-
-  // async removeMember(serverId: string, userId: string): Promise<ServerMember> {
-  //   const member = await prisma.serverMember.delete({
-  //     where: {
-  //       userId_serverId: {
-  //         userId,
-  //         serverId
-  //       },
-  //     },
-  //   });
-  //   return member as ServerMember;
-  // }
-
-  // async updateMemberRole(serverId: string, userId: string, role: 'ADMIN' | 'MEMBER'): Promise<ServerMember> {
-  //   const member = await prisma.serverMember.update({
-  //     where: {
-  //       userId_serverId: {
-  //         userId,
-  //         serverId
-  //       },
-  //     },
-  //     data: {
-  //       role
-  //     },
-  //   });
-  //   return member as ServerMember;
-  // }
-
   async findInvitationByCode(code: string) {
     return await prisma.invitation.findUnique({
       where: {
@@ -115,30 +77,6 @@ export class ServerRepository {
       }
     })
   }
-
-  // async findMember(serverId: string, userId: string): Promise<ServerMember | null> {
-  //   const member = await prisma.serverMember.findUnique({
-  //     where: {
-  //       userId_serverId: {
-  //         userId,
-  //         serverId
-  //       },
-  //     },
-  //   });
-  //   return member as ServerMember | null;
-  // }
-
-  // async findAllMembersByServerId(serverId: string): Promise<ServerMember[]> {
-  //   const members = await prisma.serverMember.findMany({
-  //     where: {
-  //       serverId,
-  //     },
-  //     orderBy: {
-  //       joinedAt: 'asc',
-  //     },
-  //   });
-  //   return members as ServerMember[];
-  // }
 
   async transferOwnership(serverId: string, oldOwnerId: string, newOwnerId: string): Promise<void> {
     await prisma.$transaction([

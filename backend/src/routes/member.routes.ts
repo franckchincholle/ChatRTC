@@ -6,7 +6,6 @@ const router = Router();
 
 router.use(authenticate);
 
-// GET /servers/:serverId/members
 router.get('/servers/:serverId/members', memberController.getServerMembers);
 
 export default router;

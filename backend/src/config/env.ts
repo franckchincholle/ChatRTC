@@ -1,9 +1,7 @@
 import dotenv from 'dotenv';
 
-// Charge les variables du .env
 dotenv.config();
 
-// Validation : ces variables DOIVENT exister
 const requiredEnvVars = [
   'DATABASE_URL',
   'JWT_SECRET',
@@ -11,14 +9,12 @@ const requiredEnvVars = [
   'PORT',
 ] as const;
 
-// Vérifie que toutes les variables requises sont présentes
 for (const envVar of requiredEnvVars) {
   if (!process.env[envVar]) {
     throw new Error(`❌ Variable d'environnement manquante : ${envVar}`);
   }
 }
 
-// Export typé des variables d'env (SANS "as const" à la fin)
 export const env = {
   // Server
   NODE_ENV: process.env.NODE_ENV || 'development',

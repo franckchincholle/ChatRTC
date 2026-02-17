@@ -3,10 +3,7 @@ import { messageService } from '../services/message.service';
 import { SocketManager } from '../sockets/socket.manager';
 
 export class MessageController {
-  /**
-   * Envoyer un message dans un channel
-   * POST /channels/:channelId/messages
-   */
+
   async sendMessage(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user.id;
@@ -15,12 +12,9 @@ export class MessageController {
 
       const message = await messageService.sendMessage(userId, channelId, content);
 
-      // 🔍 DEBUG
     const io = SocketManager.getIO();
     const room = `channel:${channelId}`;
     const socketsInRoom = await io.in(room).fetchSockets();
-    console.log(`📤 Émission vers room: ${room}`);
-    console.log(`👥 Sockets dans cette room: ${socketsInRoom.length}`);
     socketsInRoom.forEach(s => console.log(`  - Socket: ${s.id}`));
 
     io.to(room).emit('message:received', message);
@@ -31,10 +25,6 @@ export class MessageController {
     }
   }
 
-  /**
-   * Récupérer les messages d'un channel
-   * GET /channels/:channelId/messages
-   */
   async getMessages(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user.id;
@@ -48,10 +38,6 @@ export class MessageController {
     }
   }
 
-  /**
-   * Supprimer un message
-   * DELETE /channels/:channelId/messages/:messageId
-   */
   async deleteMessage(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user.id;

@@ -1,4 +1,3 @@
-// Application constants
 import config from '@/config/env';
 
 export const API_URL = config.apiUrl;
@@ -19,7 +18,7 @@ export const MIN_SERVER_NAME_LENGTH = 2;
 export const MAX_CHANNEL_NAME_LENGTH = 30;
 export const MIN_CHANNEL_NAME_LENGTH = 2;
 
-export const TYPING_TIMEOUT = 3000; // 3 seconds
+export const TYPING_TIMEOUT = 3000; 
 
 export const ERROR_MESSAGES = {
   NETWORK_ERROR: 'Erreur de connexion au serveur',

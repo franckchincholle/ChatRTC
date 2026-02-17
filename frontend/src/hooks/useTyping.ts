@@ -1,4 +1,3 @@
-// useTyping Hook
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { socketService } from '@/services/socket/socket.service';
 import { SOCKET_EVENTS } from '@/services/socket/events';
@@ -47,7 +46,6 @@ export function useTyping(
       return;
     }
 
-    // ✅ Structure alignée avec ce que socket.manager.ts émet
     const handleUserTyping = ({
       serverId: sid,
       channelId: cid,
@@ -58,20 +56,18 @@ export function useTyping(
       user: TypingUser;
     }) => {
       if (sid !== serverId || cid !== channelId) return;
-      if (user.userId === currentUserId) return; // Ne pas s'afficher soi-même
+      if (user.userId === currentUserId) return; 
 
       setTypingUsers((prev) => {
         if (prev.find((u) => u.userId === user.userId)) return prev;
         return [...prev, user];
       });
 
-      // Auto-remove après timeout
       setTimeout(() => {
         setTypingUsers((prev) => prev.filter((u) => u.userId !== user.userId));
       }, TYPING_TIMEOUT);
     };
 
-    // ✅ Structure alignée avec ce que socket.manager.ts émet
     const handleUserStopTyping = ({
       serverId: sid,
       channelId: cid,

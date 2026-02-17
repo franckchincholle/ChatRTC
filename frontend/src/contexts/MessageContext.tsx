@@ -8,10 +8,6 @@ import { SOCKET_EVENTS } from '@/services/socket/events';
 import { useChannelsContext } from '@/contexts/ChannelContext';
 import { useServersContext } from '@/contexts/ServerContext';
 
-// ============================================
-// TYPES
-// ============================================
-
 interface MessageContextType {
   messages: Message[];
   isLoading: boolean;
@@ -22,15 +18,7 @@ interface MessageContextType {
   clearError: () => void;
 }
 
-// ============================================
-// CONTEXT
-// ============================================
-
 const MessageContext = createContext<MessageContextType | null>(null);
-
-// ============================================
-// PROVIDER
-// ============================================
 
 export function MessageProvider({ children }: { children: React.ReactNode }) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -38,11 +26,8 @@ export function MessageProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   const { selectedChannel } = useChannelsContext();
-  const { selectedServer } = useServersContext(); // ← Ajout
+  const { selectedServer } = useServersContext(); 
 
-  // ============================================
-  // ✅ JOIN / LEAVE CHANNEL AUTOMATIQUEMENT
-  // ============================================
   useEffect(() => {
     if (!selectedChannel || !selectedServer) return;
 
@@ -51,7 +36,6 @@ export function MessageProvider({ children }: { children: React.ReactNode }) {
         console.log(`📺 JOIN channel: ${selectedChannel.name}`);
         socketService.joinChannel(selectedServer.id, selectedChannel.id);
       } else {
-        // Réessayer après 500ms si pas encore connecté
         console.log('⏳ Socket pas encore connecté, retry dans 500ms...');
         setTimeout(joinWhenReady, 500);
       }
@@ -63,15 +47,11 @@ export function MessageProvider({ children }: { children: React.ReactNode }) {
     return () => {
       console.log('🔍 LEAVE CHANNEL EFFECT:');
     console.log('  - leaving channel:', selectedChannel.id, selectedChannel.name);
-      // Quitter la room quand on change de channel
       socketService.leaveChannel(selectedServer.id, selectedChannel.id);
       
     };
   }, [selectedChannel?.id, selectedServer?.id]);
 
-  // ============================================
-  // CHARGER LES MESSAGES AU CHANGEMENT DE CHANNEL
-  // ============================================
   useEffect(() => {
     if (selectedChannel) {
       loadMessages(selectedChannel.id);
@@ -80,13 +60,9 @@ export function MessageProvider({ children }: { children: React.ReactNode }) {
     }
   }, [selectedChannel?.id]);
 
-  // ============================================
-  // ÉCOUTER LES ÉVÉNEMENTS SOCKET.IO
-  // ============================================
   useEffect(() => {
     if (!selectedChannel) return;
 
-    // ✅ Plus de filtre : le backend envoie déjà vers la bonne room
     const handleNewMessage = (message: Message) => {
       setMessages((prev) => [...prev, message]);
     };
@@ -103,10 +79,6 @@ export function MessageProvider({ children }: { children: React.ReactNode }) {
       socketService.off(SOCKET_EVENTS.MESSAGE_DELETED, handleMessageDeleted);
     };
   }, [selectedChannel?.id]);
-
-  // ============================================
-  // ACTIONS
-  // ============================================
 
   const loadMessages = useCallback(async (channelId?: string): Promise<void> => {
     const id = channelId ?? selectedChannel?.id;
@@ -130,7 +102,6 @@ export function MessageProvider({ children }: { children: React.ReactNode }) {
     try {
       setError(null);
       await messageService.send(selectedChannel.id, { content });
-      // ✅ Le message sera ajouté via l'événement Socket.IO NEW_MESSAGE
     } catch (err: any) {
       setError(err.message || "Échec de l'envoi du message");
       throw err;
@@ -143,7 +114,6 @@ export function MessageProvider({ children }: { children: React.ReactNode }) {
     try {
       setError(null);
       await messageService.delete(selectedChannel.id, messageId);
-      // ✅ Le message sera retiré via l'événement Socket.IO MESSAGE_DELETED
     } catch (err: any) {
       setError(err.message || 'Échec de la suppression du message');
       throw err;
@@ -168,10 +138,6 @@ export function MessageProvider({ children }: { children: React.ReactNode }) {
     </MessageContext.Provider>
   );
 }
-
-// ============================================
-// HOOK INTERNE
-// ============================================
 
 export function useMessagesContext(): MessageContextType {
   const context = useContext(MessageContext);

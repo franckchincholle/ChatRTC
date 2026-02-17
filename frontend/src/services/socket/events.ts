@@ -1,20 +1,16 @@
 export const SOCKET_EVENTS = {
-  // Connection
   CONNECT: 'connect',
   DISCONNECT: 'disconnect',
   CONNECT_ERROR: 'connect_error',
 
-  // ============================================
   // Client → Serveur
-  // ============================================
+
   JOIN_CHANNEL: 'join_channel',
   LEAVE_CHANNEL: 'leave_channel',
   TYPING: 'user:typing',
   STOP_TYPING: 'user:stop_typing',
 
-  // ============================================
   // Serveur → Client
-  // ============================================
 
   // Messages
   NEW_MESSAGE: 'message:received',

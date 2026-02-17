@@ -14,7 +14,6 @@ export class ServerService {
 
   async createServer(ownerId: string, data: CreateServerDTO): Promise<Server> {
     const server = await this.serverRepository.create(data, ownerId);
-    // await serverMemberRepository.addMember(ownerId, server.id, 'OWNER');
     return server;
   }
 
@@ -40,9 +39,7 @@ export class ServerService {
     if (!invitation) {
       throw new BadRequestError('Invalid invite code');
     }
-    /* if (invitation.expiresAt && invitation.expiresAt < new Date()) {
-        throw new Error("Invitation code has expired");
-    } */
+
     const newMember = await serverMemberRepository.addMember(userId, invitation.serverId, 'MEMBER');
 
     SocketManager.getIO().to(`server:${invitation.serverId}`).emit('server:member_joined', { userId, serverId: invitation.serverId });

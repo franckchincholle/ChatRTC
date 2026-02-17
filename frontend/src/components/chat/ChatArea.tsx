@@ -9,7 +9,6 @@ import { TypingIndicator } from './TypingIndicator';
 
 export function ChatArea() {
   const { selectedServer } = useServers();
-  // ✅ Plus d'argument — le Context gère selectedServer en interne
   const { selectedChannel } = useChannels();
 
   if (!selectedChannel) {
