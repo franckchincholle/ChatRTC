@@ -39,6 +39,7 @@ export const SOCKET_EVENTS = {
   USER_TYPING: 'user:typing',
   USER_STOP_TYPING: 'user:stop_typing',
   USER_STATUS_CHANGED: 'user:status_changed',
+  MEMBER_ROLE_UPDATED: 'member:role_updated',
 } as const;
 
 export type SocketEvent = typeof SOCKET_EVENTS[keyof typeof SOCKET_EVENTS];

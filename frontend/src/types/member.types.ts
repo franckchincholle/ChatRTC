@@ -1,11 +1,13 @@
 // Member types
-export type MemberRole = 'owner' | 'admin' | 'member';
+
+export type MemberRole = 'OWNER' | 'ADMIN' | 'MEMBER';  // ← MAJUSCULES comme Prisma
 
 export interface Member {
-  id: string;
-  username: string;
+  userId: string;      // ← userId (clé étrangère)
+  serverId: string;
+  username: string;    // ← vient de user.username
   role: MemberRole;
-  isConnected: boolean;
+  isOnline: boolean;   // ← renommé isConnected → isOnline (plus clair)
   joinedAt: string;
 }
 

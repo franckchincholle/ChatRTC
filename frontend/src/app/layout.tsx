@@ -7,6 +7,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { ServerProvider } from '@/contexts/ServerContext';
 import { ChannelProvider } from '@/contexts/ChannelContext';
 import { MessageProvider } from '@/contexts/MessageContext';
+import { MemberProvider } from '@/contexts/MemberContext';
 
 export const metadata = {
   title: 'RTC - Real Time Chat',
@@ -25,9 +26,11 @@ export default function RootLayout({
         <AuthProvider>
           <ServerProvider>
             <ChannelProvider>
-              <MessageProvider>
-                {children}
-              </MessageProvider>
+              <MemberProvider>      {/* ← Ajoute */}
+                <MessageProvider>
+                  {children}
+                </MessageProvider>
+              </MemberProvider>
             </ChannelProvider>
           </ServerProvider>
         </AuthProvider>
