@@ -132,8 +132,16 @@ export function ChannelProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(true);
       setError(null);
       const newChannel = await channelService.create(selectedServer.id, { name });
-      // ✅ Ne pas ajouter ici : Socket.IO va recevoir channel:created
-      // et handleChannelCreated vérifiera les doublons
+      
+      // ✅ Ajouter directement pour le créateur
+      // Pour les autres membres, Socket.IO via handleChannelCreated s'en charge
+      // handleChannelCreated vérifie les doublons donc pas de risque
+      setChannels((prev) => {
+        const exists = prev.find((c) => c.id === newChannel.id);
+        if (exists) return prev;
+        return [...prev, newChannel];
+      });
+      
       return newChannel;
     } catch (err: any) {
       setError(err.message || 'Échec de la création du canal');

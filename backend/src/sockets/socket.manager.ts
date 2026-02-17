@@ -47,11 +47,11 @@ export class SocketManager {
           const channelRoom = `channel:${data.channelId}`;
           socket.join(channelRoom);
           // 🔍 DEBUG
-  console.log(`📺 JOIN_CHANNEL reçu:`);
-  console.log(`  - userId: ${userId}`);
-  console.log(`  - channelId: ${data.channelId}`);
-  console.log(`  - room: ${channelRoom}`);
-  console.log(`  - Toutes les rooms du socket: ${[...socket.rooms].join(', ')}`);
+          console.log(`📺 JOIN_CHANNEL reçu:`);
+          console.log(`  - userId: ${userId}`);
+          console.log(`  - channelId: ${data.channelId}`);
+          console.log(`  - room: ${channelRoom}`);
+          console.log(`  - Toutes les rooms du socket: ${[...socket.rooms].join(', ')}`);
 
           socket.to(channelRoom).emit('channel:user_joined', {
             userId,
@@ -71,6 +71,25 @@ export class SocketManager {
             channelId: data.channelId,
           });
         });
+
+        /**
+ * Rejoindre une room de serveur dynamiquement
+ * (utile quand l'utilisateur crée ou rejoint un nouveau serveur)
+ */
+socket.on('join_server', (data: { serverId: string }) => {
+  const serverRoom = `server:${data.serverId}`;
+  socket.join(serverRoom);
+  console.log(`🏠 User ${userId} a rejoint server room: ${data.serverId}`);
+});
+
+/**
+ * Quitter une room de serveur
+ */
+socket.on('leave_server', (data: { serverId: string }) => {
+  const serverRoom = `server:${data.serverId}`;
+  socket.leave(serverRoom);
+  console.log(`🏠 User ${userId} a quitté server room: ${data.serverId}`);
+})
 
         // ============================================
         // TYPING

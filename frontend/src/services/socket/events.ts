@@ -28,8 +28,8 @@ export const SOCKET_EVENTS = {
   CHANNEL_USER_LEFT: 'channel:user_left',
 
   // Servers
-  JOIN_SERVER: 'server:member_joined',
-  LEAVE_SERVER: 'server:member_left',
+  JOIN_SERVER: 'join_server',
+  LEAVE_SERVER: 'leave_server',
   SERVER_UPDATED: 'server:updated',
   SERVER_DELETED: 'server:deleted',
   SERVER_MEMBER_JOINED: 'server:member_joined',

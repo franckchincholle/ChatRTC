@@ -5,6 +5,8 @@ import { ChannelResponse } from './channel.types';
 // EVENTS : Client → Serveur
 // ============================================
 export interface ListenEvents {
+  'join_server': (data: { serverId: string }) => void;   // ← Ajoute
+  'leave_server': (data: { serverId: string }) => void;
   // Channels
   'join_channel': (data: { serverId: string; channelId: string }) => void;
   'leave_channel': (data: { serverId: string; channelId: string }) => void;
