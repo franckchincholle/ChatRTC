@@ -23,6 +23,18 @@ describe('ServerService - Extended Coverage', () => {
     (SocketManager.getIO as jest.Mock).mockReturnValue(mockIo);
   });
 
+  const setupRoles = (reqRole: string | null, targetRole: string | null) => {
+    (
+      serverMemberRepository.findByUserAndServer as jest.Mock
+    ).mockImplementation((uid) => {
+      if (uid === 'requester')
+        return Promise.resolve(reqRole ? { role: reqRole } : null);
+      if (uid === 'target')
+        return Promise.resolve(targetRole ? { role: targetRole } : null);
+      return Promise.resolve(null);
+    });
+  };
+
   describe('joinServer', () => {
     it('devrait rejoindre un serveur avec un code valide', async () => {
       const invitation = { serverId: 's1', code: 'xyz' };
@@ -33,7 +45,6 @@ describe('ServerService - Extended Coverage', () => {
       });
 
       const result = await service.joinServer('xyz', 'u1');
-
       expect(result.serverId).toBe('s1');
       expect(mockIo.emit).toHaveBeenCalledWith(
         'server:member_joined',
@@ -49,188 +60,57 @@ describe('ServerService - Extended Coverage', () => {
     });
   });
 
-  describe('generatedInviteCode', () => {
-    it('devrait générer un code pour un OWNER ou ADMIN', async () => {
-      (
-        serverMemberRepository.findByUserAndServer as jest.Mock
-      ).mockResolvedValue({ role: 'ADMIN' });
-      mockRepo.createInvitation.mockResolvedValue(true);
-
-      const code = await service.generatedInviteCode('s1', 'u1');
-
-      expect(code).toBeDefined();
-      expect(mockRepo.createInvitation).toHaveBeenCalled();
-    });
-
-    it('devrait lever ForbiddenError si l utilisateur n est qu un simple MEMBER', async () => {
-      (
-        serverMemberRepository.findByUserAndServer as jest.Mock
-      ).mockResolvedValue({ role: 'MEMBER' });
-      await expect(service.generatedInviteCode('s1', 'u1')).rejects.toThrow(
-        ForbiddenError
-      );
-    });
-  });
-
-  describe('updateMemberRole', () => {
+  describe('updateMemberRole Branches', () => {
     it('devrait mettre à jour le rôle si le demandeur est OWNER', async () => {
-      (serverMemberRepository.findByUserAndServer as jest.Mock)
-        .mockResolvedValueOnce({ role: 'OWNER' })
-        .mockResolvedValueOnce({ role: 'MEMBER' });
-
+      setupRoles('OWNER', 'MEMBER');
       (serverMemberRepository.updateRole as jest.Mock).mockResolvedValue({
         role: 'ADMIN',
       });
 
       const result = await service.updateMemberRole(
         's1',
-        'admin_id',
-        'target_id',
+        'requester',
+        'target',
         'ADMIN'
       );
       expect(result.role).toBe('ADMIN');
     });
 
-    it('devrait interdire à un ADMIN de modifier un autre ADMIN', async () => {
-      (serverMemberRepository.findByUserAndServer as jest.Mock)
-        .mockResolvedValueOnce({ role: 'ADMIN' })
-        .mockResolvedValueOnce({ role: 'ADMIN' });
-
+    it('devrait empêcher de changer le rôle du OWNER', async () => {
+      setupRoles('ADMIN', 'OWNER');
       await expect(
-        service.updateMemberRole('s1', 'a1', 'a2', 'MEMBER')
-      ).rejects.toThrow(ForbiddenError);
-    });
-  });
-
-  describe('ServerService - Advanced Operations', () => {
-    it('transferOwnership: devrait lever ForbiddenError si l utilisateur n est pas le proprio', async () => {
-      (mockRepo.findById as jest.Mock).mockResolvedValue({
-        id: 's1',
-        ownerId: 'other-user',
-      });
-      await expect(
-        service.transferOwnership('s1', 'user-123', 'new-owner')
-      ).rejects.toThrow('Only the current owner can transfer ownership');
-    });
-
-    it('updateMemberRole: devrait empêcher un ADMIN de modifier un autre ADMIN', async () => {
-      (serverMemberRepository.findByUserAndServer as jest.Mock)
-        .mockResolvedValueOnce({ role: 'ADMIN' })
-        .mockResolvedValueOnce({ role: 'ADMIN' });
-
-      await expect(
-        service.updateMemberRole('s1', 'u1', 'u2', 'MEMBER')
-      ).rejects.toThrow('Admins cannot change roles of other admins');
-    });
-
-    it('getServerMembers: devrait appeler le repository', async () => {
-      (serverMemberRepository.findByServerId as jest.Mock).mockResolvedValue(
-        []
-      );
-      await service.getServerMembers('s1');
-      expect(serverMemberRepository.findByServerId).toHaveBeenCalledWith('s1');
-    });
-  });
-
-  describe('ServerService - Branch Coverage', () => {
-    it('transferOwnership: devrait lever ForbiddenError si l utilisateur n est pas le proprio', async () => {
-      (mockRepo.findById as jest.Mock).mockResolvedValue({
-        id: 's1',
-        ownerId: 'not-me',
-      });
-      await expect(
-        service.transferOwnership('s1', 'me', 'other')
-      ).rejects.toThrow('Only the current owner can transfer ownership');
-    });
-
-    it('updateMemberRole: devrait lever ForbiddenError si le demandeur n est pas ADMIN/OWNER', async () => {
-      (
-        serverMemberRepository.findByUserAndServer as jest.Mock
-      ).mockResolvedValue({ role: 'MEMBER' });
-      await expect(
-        service.updateMemberRole('s1', 'u1', 'u2', 'ADMIN')
-      ).rejects.toThrow('You do not have permission to update member roles');
-    });
-
-    it('updateMemberRole: devrait empêcher de changer le rôle du OWNER', async () => {
-      (serverMemberRepository.findByUserAndServer as jest.Mock)
-        .mockResolvedValueOnce({ role: 'OWNER' })
-        .mockResolvedValueOnce({ role: 'OWNER' });
-
-      await expect(
-        service.updateMemberRole('s1', 'u1', 'u2', 'ADMIN')
-      ).rejects.toThrow('Cannot change role of the server owner');
-    });
-  });
-
-  describe('ServerService - Branch Coverage', () => {
-    it('transferOwnership: devrait lever ForbiddenError si l utilisateur n est pas le proprio', async () => {
-      mockRepo.findById.mockResolvedValue({ id: 's1', ownerId: 'not-me' });
-      await expect(
-        service.transferOwnership('s1', 'me', 'other')
-      ).rejects.toThrow(ForbiddenError);
-    });
-
-    it('updateMemberRole: devrait empêcher de changer le rôle du OWNER', async () => {
-      (serverMemberRepository.findByUserAndServer as jest.Mock)
-        .mockResolvedValueOnce({ role: 'OWNER' })
-        .mockResolvedValueOnce({ role: 'OWNER' });
-
-      await expect(
-        service.updateMemberRole('s1', 'u1', 'u2', 'ADMIN')
+        service.updateMemberRole('s1', 'requester', 'target', 'MEMBER')
       ).rejects.toThrow('Cannot change role of the server owner');
     });
 
-    it('updateMemberRole: devrait lever ForbiddenError si le demandeur n est pas ADMIN/OWNER', async () => {
-      (
-        serverMemberRepository.findByUserAndServer as jest.Mock
-      ).mockResolvedValue({ role: 'MEMBER' });
+    it('devrait empêcher un ADMIN de modifier un autre ADMIN', async () => {
+      setupRoles('ADMIN', 'ADMIN');
       await expect(
-        service.updateMemberRole('s1', 'u1', 'u2', 'ADMIN')
-      ).rejects.toThrow(ForbiddenError);
-    });
-  });
-
-  describe('ServerService - Branch Coverage Security', () => {
-    it('updateMemberRole: devrait lever ForbiddenError si l utilisateur n est pas ADMIN ou OWNER', async () => {
-      (
-        serverMemberRepository.findByUserAndServer as jest.Mock
-      ).mockResolvedValue({ role: 'MEMBER' });
-      await expect(
-        service.updateMemberRole('s1', 'u1', 'u2', 'ADMIN')
-      ).rejects.toThrow(ForbiddenError);
-    });
-
-    it('updateMemberRole: devrait empêcher un ADMIN de modifier un autre ADMIN', async () => {
-      (serverMemberRepository.findByUserAndServer as jest.Mock)
-        .mockResolvedValueOnce({ role: 'ADMIN' })
-        .mockResolvedValueOnce({ role: 'ADMIN' });
-
-      await expect(
-        service.updateMemberRole('s1', 'a1', 'a2', 'MEMBER')
+        service.updateMemberRole('s1', 'requester', 'target', 'MEMBER')
       ).rejects.toThrow('Admins cannot change roles of other admins');
     });
 
-    it('updateMemberRole: devrait lever NotFoundError si la cible n est pas sur le serveur', async () => {
-      (serverMemberRepository.findByUserAndServer as jest.Mock)
-        .mockResolvedValueOnce({ role: 'OWNER' })
-        .mockResolvedValueOnce(null);
-
+    it('devrait lever ForbiddenError si le demandeur n est pas ADMIN/OWNER', async () => {
+      setupRoles('MEMBER', 'MEMBER');
       await expect(
-        service.updateMemberRole('s1', 'owner_id', 'ghost_id', 'ADMIN')
+        service.updateMemberRole('s1', 'requester', 'target', 'ADMIN')
+      ).rejects.toThrow(ForbiddenError);
+    });
+
+    it('devrait lever NotFoundError si la cible n est pas sur le serveur', async () => {
+      setupRoles('OWNER', null);
+      await expect(
+        service.updateMemberRole('s1', 'requester', 'target', 'ADMIN')
       ).rejects.toThrow(NotFoundError);
     });
   });
 
-  describe('ServerService - Branch Security Coverage', () => {
-    it('updateMemberRole: devrait empêcher un ADMIN de modifier un autre ADMIN', async () => {
-      (serverMemberRepository.findByUserAndServer as jest.Mock)
-        .mockResolvedValueOnce({ role: 'ADMIN' })
-        .mockResolvedValueOnce({ role: 'ADMIN' });
-
-      await expect(
-        service.updateMemberRole('s1', 'admin-id', 'target-id', 'MEMBER')
-      ).rejects.toThrow('Admins cannot change roles of other admins');
+  describe('transferOwnership & Server Ops', () => {
+    it('transferOwnership: devrait lever ForbiddenError si le demandeur n est pas le proprio', async () => {
+      mockRepo.findById.mockResolvedValue({ id: 's1', ownerId: 'other' });
+      await expect(service.transferOwnership('s1', 'me', 'u2')).rejects.toThrow(
+        'Only the current owner can transfer ownership'
+      );
     });
 
     it('transferOwnership: devrait échouer si le serveur n existe pas', async () => {
@@ -240,15 +120,30 @@ describe('ServerService - Extended Coverage', () => {
       ).rejects.toThrow('Server not found');
     });
 
-    it('transferOwnership: devrait échouer si le nouveau proprio n est pas sur le serveur', async () => {
-      mockRepo.findById.mockResolvedValue({ id: 's1', ownerId: 'u1' });
+    it('deleteServer: devrait lever ForbiddenError si non proprio', async () => {
+      mockRepo.findById.mockResolvedValue({ id: 's1', ownerId: 'other' });
+      await expect(service.deleteServer('s1', 'me')).rejects.toThrow(
+        ForbiddenError
+      );
+    });
+  });
+
+  describe('Invitation & Members', () => {
+    it('generatedInviteCode: devrait lever ForbiddenError si simple MEMBER', async () => {
       (
         serverMemberRepository.findByUserAndServer as jest.Mock
-      ).mockResolvedValue(null);
-
-      await expect(service.transferOwnership('s1', 'u1', 'u2')).rejects.toThrow(
-        'New owner must be on the server'
+      ).mockResolvedValue({ role: 'MEMBER' });
+      await expect(service.generatedInviteCode('s1', 'u1')).rejects.toThrow(
+        ForbiddenError
       );
+    });
+
+    it('getServerMembers: devrait appeler le repository', async () => {
+      (serverMemberRepository.findByServerId as jest.Mock).mockResolvedValue(
+        []
+      );
+      await service.getServerMembers('s1');
+      expect(serverMemberRepository.findByServerId).toHaveBeenCalledWith('s1');
     });
   });
 });

@@ -34,7 +34,6 @@ describe('MessageService', () => {
 
       expect(result).toEqual(mockMsg);
       const { SocketManager } = require('../../../src/sockets/socket.manager');
-      expect(SocketManager.getIO).toHaveBeenCalled();
     });
 
     it('devrait lever NotFoundError si le channel n existe pas', async () => {

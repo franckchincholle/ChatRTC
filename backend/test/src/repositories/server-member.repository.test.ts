@@ -37,15 +37,16 @@ describe('ServerMemberRepository', () => {
     expect(count).toBe(10);
   });
 
-  it('findByServerId: devrait retourner les membres inclus avec les utilisateurs', async () => {
-    (prisma.serverMember.findMany as jest.Mock).mockResolvedValue([
-      { userId: 'u1', serverId: 's1' },
-    ]);
+  it('findByServerId: devrait appeler findMany avec le bon format', async () => {
     await serverMemberRepository.findByServerId('s1');
     expect(prisma.serverMember.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { serverId: 's1' },
-        include: { user: true },
+        include: {
+          user: {
+            select: { id: true, username: true, email: true },
+          },
+        },
       })
     );
   });
@@ -94,7 +95,9 @@ describe('ServerMemberRepository', () => {
   });
 
   it('isOwner: devrait retourner false si le rôle est MEMBER', async () => {
-    (prisma.serverMember.findUnique as jest.Mock).mockResolvedValue({ role: 'MEMBER' });
+    (prisma.serverMember.findUnique as jest.Mock).mockResolvedValue({
+      role: 'MEMBER',
+    });
     const result = await serverMemberRepository.isOwner('u1', 's1');
     expect(result).toBe(false);
   });
