@@ -1,0 +1,16 @@
+sequenceDiagram
+    participant C as Client (ADMIN)
+    participant E as Express API
+    participant PM as PermissionMiddleware
+    participant MS as MessageService
+    participant R as ServerMemberRepo
+
+    C->>E: DELETE /api/messages/:id
+    E->>PM: authenticate + requireAdmin
+    PM-->>E: Authorized (is Admin)
+    E->>MS: deleteMessage(adminId, messageId)
+    MS->>R: findByUserAndServer(authorId, serverId)
+    R-->>MS: role: 'OWNER'
+    Note over MS: Logic: ADMIN cannot<br/>delete OWNER's message
+    MS-->>E: throw ForbiddenError
+    E-->>C: Response 403 { success: false, message: "..." }

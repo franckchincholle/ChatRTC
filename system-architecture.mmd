@@ -1,0 +1,28 @@
+graph TD
+    User((User/Browser))
+    
+    subgraph Frontend_Layer [Frontend Layer]
+        NextJS[Next.js Application]
+    end
+
+    subgraph Backend_Layer [Backend Layer]
+        Express[Express.js API]
+        Prisma[Prisma ORM]
+    end
+
+    subgraph Data_Layer [Data Layer]
+        Postgres[(PostgreSQL Database)]
+    end
+
+    %% Relations
+    User <-->|HTTP/JSON & WebSockets| NextJS
+    NextJS <-->|REST API Calls| Express
+    Express <-->|Method Calls| Prisma
+    Prisma <-->|SQL Queries| Postgres
+
+    %% Styling
+    style User fill:#f9f,stroke:#333,stroke-width:2px
+    style NextJS fill:#000,color:#fff,stroke:#333
+    style Express fill:#00d1b2,color:#fff,stroke:#333
+    style Prisma fill:#1b6ac9,color:#fff,stroke:#333
+    style Postgres fill:#336791,color:#fff,stroke:#333
