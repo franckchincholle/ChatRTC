@@ -8,11 +8,15 @@ import { useChannels } from '@/hooks/useChannel';
 import { useAuth } from '@/hooks/useAuth';
 import { validateMessage } from '@/utils/validators';
 import { Button } from '@/components/ui/Button';
+import { GiphyFetch } from '@giphy/js-fetch-api';
+import { Grid } from '@giphy/react-components';
+
+const gf = new GiphyFetch('UP4mVIQARjHZh1NF8w62C5xxpCV4DymY');
 
 export function MessageInput() {
   const [content, setContent] = useState('');
   const [error, setError] = useState('');
-
+  const [showGifPicker, setShowGifPicker] = useState(false);
   const { user } = useAuth();
   const { selectedServer } = useServers();
   const { selectedChannel } = useChannels();
@@ -51,20 +55,68 @@ export function MessageInput() {
     }
   };
 
+  const handleGifSelect = async (gif: any, e: React.SyntheticEvent<HTMLElement, Event>) => {
+    e.preventDefault();
+    try {
+      await sendMessage(gif.images.original.url);
+      setShowGifPicker(false);
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
+  const fetchGifs = (offset: number) => gf.trending({ offset, limit: 10 });
+
   return (
-    <form onSubmit={handleSubmit} className="message-form">
-      <input
-        type="text"
-        className="message-input"
-        placeholder="Écrivez un message..."
-        value={content}
-        onChange={handleChange}
-        maxLength={2000}
-      />
-      <Button type="submit" variant="primary" className="send-button">
-        Envoyer
-      </Button>
-      {error && <span className="auth-error">{error}</span>}
-    </form>
+    <div className="message-input-container" style={{ position: 'relative' }}>
+      <form onSubmit={handleSubmit} className="message-form" style={{ display: 'flex', gap: '8px' }}>
+        <input
+          type="text"
+          className="message-input"
+          placeholder="Écrivez un message..."
+          value={content}
+          onChange={handleChange}
+          maxLength={2000}
+          style={{ flexGrow: 1 }}
+        />
+
+        <Button 
+          type="button" 
+          variant="primary" 
+          onClick={() => setShowGifPicker(!showGifPicker)}
+        >
+          GIF
+        </Button>
+
+        <Button type="submit" variant="primary" className="send-button">
+          Envoyer
+        </Button>
+        {error && <span className="auth-error">{error}</span>}
+      </form>
+
+      {showGifPicker && (
+        <div 
+          className="gif-picker" 
+          style={{ 
+            position: 'absolute', 
+            bottom: '60px', 
+            right: '0', 
+            zIndex: 10, 
+            backgroundColor: 'white', 
+            border: '1px solid #ccc', 
+            borderRadius: '8px', 
+            padding: '10px',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+          }}
+        >
+          <Grid 
+            width={300} 
+            columns={3} 
+            fetchGifs={fetchGifs} 
+            onGifClick={handleGifSelect} 
+          />
+        </div>
+      )}
+    </div>
   );
 }
