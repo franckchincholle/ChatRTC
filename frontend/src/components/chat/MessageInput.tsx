@@ -106,7 +106,9 @@ export function MessageInput() {
             border: '1px solid #ccc', 
             borderRadius: '8px', 
             padding: '10px',
-            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+            boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+            height: '350px',
+            overflowY: 'auto'
           }}
         >
           <Grid 
