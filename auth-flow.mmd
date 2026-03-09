@@ -1,0 +1,40 @@
+sequenceDiagram
+    participant C as Client
+    participant E as Express API
+    participant S as AuthService
+    participant D as PostgreSQL (Prisma)
+
+    C->>E: POST /auth/login (email, password)
+    E->>S: login(email, password)
+    S->>D: findUnique({ where: { email } })
+    D-->>S: User Data + Password Hash
+    S->>S: bcrypt.compare()
+    S-->>E: JWT Token + User Data
+    E-->>C: Response 200 { success: true, token: "..." }
+    Note over C: User authenticatedsequenceDiagram
+    participant C as Client
+    participant E as Express API
+    participant S as AuthService
+    participant D as PostgreSQL (Prisma)
+
+    C->>E: POST /auth/login (email, password)
+    E->>S: login(email, password)
+    S->>D: findUnique({ where: { email } })
+    D-->>S: User Data + Password Hash
+    S->>S: bcrypt.compare()
+    S-->>E: JWT Token + User Data
+    E-->>C: Response 200 { success: true, token: "..." }
+    Note over C: User authenticatedsequenceDiagram
+    participant C as Client
+    participant E as Express API
+    participant S as AuthService
+    participant D as PostgreSQL (Prisma)
+
+    C->>E: POST /auth/login (email, password)
+    E->>S: login(email, password)
+    S->>D: findUnique({ where: { email } })
+    D-->>S: User Data + Password Hash
+    S->>S: bcrypt.compare()
+    S-->>E: JWT Token + User Data
+    E-->>C: Response 200 { success: true, token: "..." }
+    Note over C: User authenticated

@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  email     String   @unique
+  password  String   
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  ownedServers      Server[]        @relation("OwnedServers")      
+  serverMemberships ServerMember[]  @relation("UserMemberships")   
+  messages          Message[]       @relation("UserMessages")      
+}
+
+model Server {
+  id        String   @id @default(uuid())
+  name      String   @unique 
+  ownerId   String   
+  createdAt DateTime @default(now()) 
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  owner       User           @relation("OwnedServers", fields: [ownerId], references: [id])
+  channels    Channel[]      @relation("OwnedChannels")       
+  members     ServerMember[] @relation("ServerMemberships")   
+  invitations Invitation[]   @relation("ServerInvitations")   
+}
+
+model Channel {
+  id        String   @id @default(uuid())
+  name      String   
+  serverId  String   
+  createdAt DateTime @default(now()) 
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  server   Server    @relation("OwnedChannels", fields: [serverId], references: [id], onDelete: Cascade)
+  messages Message[] @relation("ChannelMessages")  
+
+  // Contrainte 
+  @@unique([serverId, name])
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  content   String
+  channelId String   // Dans quel channel ?
+  userId    String   // Qui a écrit ce message ?
+  createdAt DateTime @default(now()) 
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  author  User    @relation("UserMessages", fields: [userId], references: [id], onDelete: Cascade)
+  channel Channel @relation("ChannelMessages", fields: [channelId], references: [id], onDelete: Cascade)
+}
+
+model ServerMember {
+  id        String   @id @default(uuid())
+  userId    String   // Quel user ?
+  serverId  String   // Dans quel server ?
+  role      String   // "OWNER" | "ADMIN" | "MEMBER"
+  joinedAt  DateTime @default(now())
+
+  // Relations
+  user   User   @relation("UserMemberships", fields: [userId], references: [id], onDelete: Cascade)
+  server Server @relation("ServerMemberships", fields: [serverId], references: [id], onDelete: Cascade)
+
+  // Contrainte 
+  @@unique([userId, serverId])
+}
+
+model Invitation {
+  id        String    @id @default(uuid())
+  code      String    @unique          
+  serverId  String                     
+  expiresAt DateTime?                  
+  createdAt DateTime  @default(now())
+
+  // Relations
+  server Server @relation("ServerInvitations", fields: [serverId], references: [id], onDelete: Cascade)
+}

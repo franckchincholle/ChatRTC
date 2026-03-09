@@ -1,0 +1,16 @@
+sequenceDiagram
+    participant C1 as Client A (Author)
+    participant E as Express API
+    participant MS as MessageService
+    participant D as PostgreSQL (Prisma)
+    participant SM as SocketManager (Socket.IO)
+    participant C2 as Client B (Recipient)
+
+    C1->>E: POST /api/messages (content, channelId)
+    E->>MS: sendMessage(userId, channelId, content)
+    MS->>D: message.create({ data })
+    D-->>MS: New Message Object
+    MS->>SM: getIO().to(serverId).emit('message:received')
+    SM-->>C2: Event 'message:received' (Real-time)
+    MS-->>E: New Message Data
+    E-->>C1: Response 201 { success: true, data }
