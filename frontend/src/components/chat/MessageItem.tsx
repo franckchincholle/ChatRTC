@@ -31,6 +31,10 @@ export function MessageItem({ message }: MessageItemProps) {
     }
   };
 
+  const isGifContent = (content: string) => {
+    return content.includes('giphy.com/media') || content.match(/\.(gif)$/i);
+  };
+
   return (
     <div className="message">
       <div className="message-header">
@@ -44,7 +48,23 @@ export function MessageItem({ message }: MessageItemProps) {
           </div>
         )}
       </div>
-      <div className="message-content">{message.content}</div>
+      <div className="message-content">
+        {isGifContent(message.content) ? (
+          <img 
+            src={message.content} 
+            alt="GIF" 
+            style={{ 
+              maxWidth: '300px',
+              maxHeight: '300px',
+              borderRadius: '8px', 
+              marginTop: '8px',
+              display: 'block'
+            }} 
+          />
+        ) : (
+          <p>{message.content}</p>
+        )}
+      </div>
     </div>
   );
 }
