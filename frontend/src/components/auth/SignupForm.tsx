@@ -4,19 +4,17 @@ import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { validateEmail, validatePassword, validateUsername } from '@/utils/validators';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
 
 export function SignupForm() {
-  const [email, setEmail] = useState('');
+  const [email, setEmail]       = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState<{ 
-    email?: string; 
-    username?: string; 
+  const [errors, setErrors]     = useState<{
+    email?: string;
+    username?: string;
     password?: string;
   }>({});
-  
+
   const { signup, isLoading, error } = useAuth();
   const router = useRouter();
 
@@ -24,15 +22,15 @@ export function SignupForm() {
     e.preventDefault();
     setErrors({});
 
-    const emailValidation = validateEmail(email);
-    const usernameValidation = validateUsername(username);
-    const passwordValidation = validatePassword(password);
+    const emailV    = validateEmail(email);
+    const usernameV = validateUsername(username);
+    const passwordV = validatePassword(password);
 
-    if (!emailValidation.isValid || !usernameValidation.isValid || !passwordValidation.isValid) {
+    if (!emailV.isValid || !usernameV.isValid || !passwordV.isValid) {
       setErrors({
-        email: emailValidation.error,
-        username: usernameValidation.error,
-        password: passwordValidation.error,
+        email:    emailV.error,
+        username: usernameV.error,
+        password: passwordV.error,
       });
       return;
     }
@@ -40,50 +38,82 @@ export function SignupForm() {
     try {
       await signup({ email, username, password });
       router.push('/chat');
-    } catch (err) {
-    }
+    } catch {}
   };
 
   return (
     <form onSubmit={handleSubmit} className="auth-form">
-      <div>
-        <Input
+      <div className="auth-title">Créer un compte</div>
+      <div className="auth-subtitle">Rejoins la conversation</div>
+
+      {/* Username */}
+      <div className="auth-field">
+        <label className="auth-field-label" htmlFor="signup-username">
+          Nom d'utilisateur
+        </label>
+        <input
+          id="signup-username"
           type="text"
-          placeholder="Nom d'utilisateur"
+          className={`auth-input${errors.username ? ' input-error' : ''}`}
+          placeholder="ex : marie_dev"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           disabled={isLoading}
+          autoComplete="username"
+          autoFocus
         />
-        {errors.username && <span className="auth-error">{errors.username}</span>}
+        {errors.username && <span className="input-error-message">{errors.username}</span>}
       </div>
 
-      <div>
-        <Input
+      {/* Email */}
+      <div className="auth-field">
+        <label className="auth-field-label" htmlFor="signup-email">Email</label>
+        <input
+          id="signup-email"
           type="email"
-          placeholder="Email"
+          className={`auth-input${errors.email ? ' input-error' : ''}`}
+          placeholder="toi@exemple.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           disabled={isLoading}
+          autoComplete="email"
         />
-        {errors.email && <span className="auth-error">{errors.email}</span>}
+        {errors.email && <span className="input-error-message">{errors.email}</span>}
       </div>
 
-      <div>
-        <Input
+      {/* Mot de passe */}
+      <div className="auth-field">
+        <label className="auth-field-label" htmlFor="signup-password">
+          Mot de passe
+        </label>
+        <input
+          id="signup-password"
           type="password"
-          placeholder="Mot de passe (min. 8 caractères)"
+          className={`auth-input${errors.password ? ' input-error' : ''}`}
+          placeholder="Min. 8 caractères"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           disabled={isLoading}
+          autoComplete="new-password"
         />
-        {errors.password && <span className="auth-error">{errors.password}</span>}
+        {errors.password && <span className="input-error-message">{errors.password}</span>}
       </div>
 
-      {error && <div className="auth-error">{error}</div>}
+      {/* Erreur serveur */}
+      {error && (
+        <div className="auth-error" role="alert">{error}</div>
+      )}
 
-      <Button type="submit" disabled={isLoading}>
-        {isLoading ? 'Inscription...' : "S'inscrire"}
-      </Button>
+      <button
+        type="submit"
+        className="auth-submit"
+        disabled={isLoading}
+      >
+        {isLoading
+          ? <><span className="spinner spinner-xs" /> Inscription…</>
+          : "S'inscrire"
+        }
+      </button>
     </form>
   );
 }
