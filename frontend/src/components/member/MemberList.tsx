@@ -3,45 +3,47 @@
 import React from 'react';
 import { useMembers } from '@/hooks/useMembers';
 import { MemberItem } from './MemberItem';
+import { Spinner } from '@/components/ui/Spinner';
 
 export function MemberList() {
-  const { 
-    onlineMembers, 
-    offlineMembers, 
-    onlineCount, 
-    totalCount,
-    isLoading
-  } = useMembers();
+  const { onlineMembers, offlineMembers, isLoading } = useMembers();
 
-  if (isLoading) return <div className="members-sidebar">Chargement...</div>;
+  if (isLoading) {
+    return <Spinner centered />;
+  }
+
+  const total   = onlineMembers.length + offlineMembers.length;
+  const isEmpty = total === 0;
 
   return (
-    <div className="members-sidebar">
-      <div className="members-sidebar-header">
-        <h3 className="members-sidebar-title">
-          Membres — {onlineCount}/{totalCount} en ligne
-        </h3>
-      </div>
-
+    <div className="members-list">
+      {/* EN LIGNE */}
       {onlineMembers.length > 0 && (
-        <div className="members-group">
-          <div className="members-group-title">
-            EN LIGNE — {onlineMembers.length}
+        <>
+          <div className="members-section-label">
+            En ligne — {onlineMembers.length}
           </div>
           {onlineMembers.map((member) => (
             <MemberItem key={member.userId} member={member} />
           ))}
-        </div>
+        </>
       )}
 
+      {/* HORS LIGNE */}
       {offlineMembers.length > 0 && (
-        <div className="members-group">
-          <div className="members-group-title">
-            HORS LIGNE — {offlineMembers.length}
+        <>
+          <div className="members-section-label" style={{ marginTop: '10px' }}>
+            Hors ligne — {offlineMembers.length}
           </div>
           {offlineMembers.map((member) => (
-            <MemberItem key={member.userId} member={member} />
+            <MemberItem key={member.userId} member={member} dimmed />
           ))}
+        </>
+      )}
+
+      {isEmpty && (
+        <div className="members-empty">
+          Aucun membre dans ce serveur.
         </div>
       )}
     </div>
