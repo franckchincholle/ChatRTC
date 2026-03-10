@@ -13,7 +13,7 @@ interface CreateServerModalProps {
 }
 
 export function CreateServerModal({ isOpen, onClose }: CreateServerModalProps) {
-  const [name, setName] = useState('');
+  const [name, setName]   = useState('');
   const [error, setError] = useState('');
   const { createServer, isLoading } = useServers();
 
@@ -43,27 +43,30 @@ export function CreateServerModal({ isOpen, onClose }: CreateServerModalProps) {
       title="Créer un serveur"
       footer={
         <>
-          <Button variant="primary" onClick={handleSubmit} disabled={isLoading}>
-            {isLoading ? 'Création...' : 'Créer'}
-          </Button>
-          <Button variant="danger" onClick={onClose}>
+          <Button variant="ghost" onClick={onClose} disabled={isLoading}>
             Annuler
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleSubmit}
+            loading={isLoading}
+          >
+            Créer
           </Button>
         </>
       }
     >
       <form onSubmit={handleSubmit}>
-        <div className="input-group">
-          <Input
-            type="text"
-            placeholder="Nom du serveur"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            disabled={isLoading}
-            autoFocus
-          />
-          {error && <span className="auth-error">{error}</span>}
-        </div>
+        <Input
+          label="Nom du serveur"
+          type="text"
+          placeholder="Mon super serveur"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          disabled={isLoading}
+          error={error}
+          autoFocus
+        />
       </form>
     </Modal>
   );

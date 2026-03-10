@@ -15,9 +15,19 @@ export function ChatArea() {
     return (
       <div className="chat-area">
         <div className="empty-state">
-          {selectedServer
-            ? 'Sélectionnez un canal pour commencer'
-            : 'Sélectionnez un serveur pour commencer'}
+          <div className="empty-state-icon">
+            {selectedServer ? '#' : '⌘'}
+          </div>
+          <p className="empty-state-title">
+            {selectedServer
+              ? 'Sélectionne un canal'
+              : 'Sélectionne un serveur'}
+          </p>
+          <p className="empty-state-desc">
+            {selectedServer
+              ? 'Choisis un canal dans la liste pour commencer à échanger'
+              : 'Rejoins ou crée un serveur pour commencer'}
+          </p>
         </div>
       </div>
     );
@@ -25,18 +35,25 @@ export function ChatArea() {
 
   return (
     <div className="chat-area">
+
+      {/* Header */}
       <div className="chat-header">
-        <h2 className="chat-title"># {selectedChannel.name}</h2>
+        <span className="chat-header-hash">#</span>
+        <h2 className="chat-title">{selectedChannel.name}</h2>
       </div>
 
+      {/* Messages */}
       <MessageList />
 
+      {/* Typing */}
       <TypingIndicator
         serverId={selectedServer?.id || null}
         channelId={selectedChannel.id}
       />
 
+      {/* Input */}
       <MessageInput />
+
     </div>
   );
 }

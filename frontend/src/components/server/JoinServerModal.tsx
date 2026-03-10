@@ -14,8 +14,8 @@ interface JoinServerModalProps {
 
 export function JoinServerModal({ isOpen, onClose }: JoinServerModalProps) {
   const [inviteCode, setInviteCode] = useState('');
-  const [error, setError] = useState('');
-  const { joinServer, isLoading } = useServers();
+  const [error, setError]           = useState('');
+  const { joinServer, isLoading }   = useServers();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,27 +43,33 @@ export function JoinServerModal({ isOpen, onClose }: JoinServerModalProps) {
       title="Rejoindre un serveur"
       footer={
         <>
-          <Button variant="primary" onClick={handleSubmit} disabled={isLoading}>
-            {isLoading ? 'Connexion...' : 'Rejoindre'}
-          </Button>
-          <Button variant="danger" onClick={onClose}>
+          <Button variant="ghost" onClick={onClose} disabled={isLoading}>
             Annuler
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleSubmit}
+            loading={isLoading}
+          >
+            Rejoindre
           </Button>
         </>
       }
     >
       <form onSubmit={handleSubmit}>
-        <div className="input-group">
-          <Input
-            type="text"
-            placeholder="Code d'invitation"
-            value={inviteCode}
-            onChange={(e) => setInviteCode(e.target.value)}
-            disabled={isLoading}
-            autoFocus
-          />
-          {error && <span className="auth-error">{error}</span>}
-        </div>
+        <Input
+          label="Code d'invitation"
+          type="text"
+          placeholder="ex : aBcD1234"
+          value={inviteCode}
+          onChange={(e) => setInviteCode(e.target.value)}
+          disabled={isLoading}
+          error={error}
+          autoFocus
+        />
+        <p className="modal-hint">
+          Demande un code à un administrateur du serveur que tu veux rejoindre.
+        </p>
       </form>
     </Modal>
   );

@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useMessages } from '@/hooks/useMessage';
 import { useTyping } from '@/hooks/useTyping';
 import { useServers } from '@/hooks/useServer';
 import { useChannels } from '@/hooks/useChannel';
 import { useAuth } from '@/hooks/useAuth';
 import { validateMessage } from '@/utils/validators';
-import { Button } from '@/components/ui/Button';
 import { GiphyFetch } from '@giphy/js-fetch-api';
 import { Grid } from '@giphy/react-components';
 
@@ -16,20 +15,33 @@ const gf = new GiphyFetch('UP4mVIQARjHZh1NF8w62C5xxpCV4DymY');
 const GIF_CATEGORIES = ['Bonjour', 'MDR', 'Triste', 'Bravo', 'Wtf', 'Amour'];
 
 export function MessageInput() {
-  const [content, setContent] = useState('');
-  const [error, setError] = useState('');
+  const [content, setContent]           = useState('');
+  const [error, setError]               = useState('');
   const [showGifPicker, setShowGifPicker] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm]     = useState('');
 
-  const { user } = useAuth();
-  const { selectedServer } = useServers();
-  const { selectedChannel } = useChannels();
-  const { sendMessage } = useMessages();
+  const { user }             = useAuth();
+  const { selectedServer }   = useServers();
+  const { selectedChannel }  = useChannels();
+  const { sendMessage }      = useMessages();
   const { startTyping, stopTyping } = useTyping(
     selectedServer?.id || null,
     selectedChannel?.id || null,
-    user?.id
+    user?.id,
   );
+
+  const pickerRef = useRef<HTMLDivElement>(null);
+
+  /* Ferme le picker en cliquant hors */
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
+        setShowGifPicker(false);
+      }
+    };
+    if (showGifPicker) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showGifPicker]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,14 +64,17 @@ export function MessageInput() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setContent(e.target.value);
-    if (e.target.value.trim()) {
-      startTyping();
-    } else {
-      stopTyping();
+    e.target.value.trim() ? startTyping() : stopTyping();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e as unknown as React.FormEvent);
     }
   };
 
-  const handleGifSelect = async (gif: any, e: React.SyntheticEvent<HTMLElement, Event>) => {
+  const handleGifSelect = async (gif: any, e: React.SyntheticEvent) => {
     e.preventDefault();
     try {
       await sendMessage(gif.images.original.url);
@@ -70,105 +85,114 @@ export function MessageInput() {
     }
   };
 
-  const fetchGifs = (offset: number) => {
-    if (searchTerm) {
-      return gf.search(searchTerm, { offset, limit: 10, lang: 'en' });
-    }
-    return gf.trending({ offset, limit: 10 });
-  };
+  const fetchGifs = (offset: number) =>
+    searchTerm
+      ? gf.search(searchTerm, { offset, limit: 10, lang: 'fr' })
+      : gf.trending({ offset, limit: 10 });
 
   return (
-    <div className="message-input-container" style={{ position: 'relative' }}>
-      <form onSubmit={handleSubmit} className="message-form" style={{ display: 'flex', gap: '8px' }}>
-        <input
-          type="text"
-          className="message-input"
-          placeholder="Écrivez un message..."
-          value={content}
-          onChange={handleChange}
-          maxLength={2000}
-          style={{ flexGrow: 1 }}
-        />
-        
-        <Button 
-          type="button" 
-          variant="primary" 
-          onClick={() => setShowGifPicker(!showGifPicker)}
-        >
-          GIF
-        </Button>
-        <Button type="submit" variant="primary" className="send-button">
-          Envoyer
-        </Button>
-        {error && <span className="auth-error">{error}</span>}
-      </form>
+    <div className="message-form-wrapper">
 
+      {/* ── GIF Picker ── */}
       {showGifPicker && (
-        <div 
-          className="gif-picker" 
-          style={{ 
-            position: 'absolute', 
-            bottom: '60px', 
-            right: '0', 
-            zIndex: 10, 
-            backgroundColor: 'white', 
-            border: '1px solid #ccc', 
-            borderRadius: '8px', 
-            padding: '10px',
-            boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-            width: '320px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '10px'
-          }}
-        >
-          <input 
-            type="text" 
-            placeholder="Rechercher un GIF..." 
+        <div className="gif-picker" ref={pickerRef}>
+          <div className="gif-picker-header">
+            <span className="gif-picker-title">GIF</span>
+            <button
+              className="gif-picker-close"
+              onClick={() => setShowGifPicker(false)}
+              aria-label="Fermer le sélecteur GIF"
+            >
+              ✕
+            </button>
+          </div>
+
+          <input
+            type="text"
+            className="gif-search-input"
+            placeholder="Rechercher un GIF..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              padding: '8px',
-              borderRadius: '4px',
-              border: '1px solid #ccc',
-              width: '100%'
-            }}
+            autoFocus
           />
 
-          <div style={{ display: 'flex', gap: '5px', overflowX: 'auto', paddingBottom: '5px' }}>
-            {GIF_CATEGORIES.map(category => (
+          <div className="gif-categories">
+            {GIF_CATEGORIES.map((cat) => (
               <button
-                key={category}
+                key={cat}
                 type="button"
-                onClick={() => setSearchTerm(category)}
-                style={{
-                  padding: '4px 8px',
-                  borderRadius: '12px',
-                  border: 'none',
-                  backgroundColor: searchTerm === category ? '#5865F2' : '#e3e5e8',
-                  color: searchTerm === category ? 'white' : 'black',
-                  cursor: 'pointer',
-                  fontSize: '0.8rem',
-                  whiteSpace: 'nowrap'
-                }}
+                className={`gif-category-btn${searchTerm === cat ? ' active' : ''}`}
+                onClick={() => setSearchTerm(cat)}
               >
-                {category}
+                {cat}
               </button>
             ))}
           </div>
 
-          <div style={{ height: '350px', overflowY: 'auto' }}>
-            <Grid 
-              key={searchTerm} 
-              width={300} 
-              columns={3} 
-              fetchGifs={fetchGifs} 
-              onGifClick={handleGifSelect} 
-              noResultsMessage="Aucun GIF trouvé 😢"
+          <div className="gif-grid-wrapper">
+            <Grid
+              key={searchTerm}
+              width={300}
+              columns={3}
+              fetchGifs={fetchGifs}
+              onGifClick={handleGifSelect}
+              noResultsMessage="Aucun GIF trouvé"
             />
           </div>
         </div>
       )}
+
+      {/* ── Input bar ── */}
+      <form className="message-form" onSubmit={handleSubmit}>
+        <div className="message-input-wrapper">
+          {/* Préfixe # */}
+          <div className="message-input-prefix" aria-hidden="true">#</div>
+
+          {/* Champ texte */}
+          <input
+            type="text"
+            className="message-input"
+            placeholder={
+              selectedChannel
+                ? `Message dans #${selectedChannel.name}`
+                : 'Message...'
+            }
+            value={content}
+            onChange={handleChange}
+            onKeyDown={handleKeyDown}
+            maxLength={2000}
+            autoComplete="off"
+          />
+
+          {/* Boutons droite */}
+          <div className="message-input-actions">
+            <button
+              type="button"
+              className={`message-input-btn gif-toggle-btn${showGifPicker ? ' active' : ''}`}
+              onClick={() => setShowGifPicker((v) => !v)}
+              title="Envoyer un GIF"
+              aria-label="Ouvrir le sélecteur GIF"
+            >
+              GIF
+            </button>
+            <button
+              type="submit"
+              className="send-button"
+              disabled={!content.trim()}
+              aria-label="Envoyer le message"
+            >
+              ↑
+            </button>
+          </div>
+        </div>
+
+        {error && (
+          <div className="message-input-error" role="alert">
+            {error}
+          </div>
+        )}
+      </form>
+
     </div>
   );
 }

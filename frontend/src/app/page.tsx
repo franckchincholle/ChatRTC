@@ -9,20 +9,11 @@ export default function HomePage() {
 
   useEffect(() => {
     const token = storage.getToken();
-    if (token) {
-      router.push('/chat');
-    } else {
-      router.push('/auth/login');
-    }
+    router.push(token ? '/chat' : '/auth/login');
   }, [router]);
 
   return (
-    <div style={{ 
-      display: 'flex', 
-      justifyContent: 'center', 
-      alignItems: 'center', 
-      height: '100vh' 
-    }}>
+    <div className="spinner-center" style={{ height: '100vh' }}>
       <div className="spinner" />
     </div>
   );
