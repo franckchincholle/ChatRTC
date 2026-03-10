@@ -33,8 +33,14 @@ export function ChannelList() {
 
   return (
     <>
+      {/* Toast "Code copié" */}
+      {inviteCopied && (
+        <div className="invite-toast" role="status" aria-live="polite">
+          ✓ Code copié !
+        </div>
+      )}
+
       <div className="channel-list">
-        {/* Section CANAUX TEXTE */}
         <div className="channel-section-header">
           <span className="channel-section-label">Canaux texte</span>
           {isOwner && (
@@ -56,6 +62,7 @@ export function ChannelList() {
             isSelected={selectedChannel?.id === channel.id}
             onSelect={() => selectChannel(channel)}
             canManage={isOwner}
+            onInvite={isOwner ? handleInvite : undefined}
           />
         ))}
 
@@ -65,18 +72,6 @@ export function ChannelList() {
           </div>
         )}
       </div>
-
-      {/* Bouton d'invitation en bas du header du serveur */}
-      {isOwner && (
-        <div className="channel-invite-row">
-          <button
-            className={`channel-invite-btn${inviteCopied ? ' copied' : ''}`}
-            onClick={handleInvite}
-          >
-            {inviteCopied ? '✓ Code copié !' : '⊕ Inviter des membres'}
-          </button>
-        </div>
-      )}
 
       <CreateChannelModal
         isOpen={showCreateModal}
