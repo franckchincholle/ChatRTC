@@ -12,44 +12,25 @@ import { Spinner } from '@/components/ui/Spinner';
 
 export default function ChatPage() {
   const { isAuthenticated, isLoading } = useAuth();
-  const { connect, disconnect } = useSocket();
+  const { connect, disconnect }        = useSocket();
   const router = useRouter();
 
-  // Rediriger vers /login si l'utilisateur n'est pas connecté
-  // isLoading ne sera true que pendant login/signup, pas au chargement initial
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push('/auth/login');
     }
   }, [isAuthenticated, isLoading, router]);
 
-  // Connecter le socket une fois authentifié
   useEffect(() => {
-    if (isAuthenticated) {
-      connect();
-    }
-    return () => {
-      if (!isAuthenticated) disconnect();
-    };
+    if (isAuthenticated) connect();
+    return () => { if (!isAuthenticated) disconnect(); };
   }, [isAuthenticated, connect, disconnect]);
 
-  // Spinner uniquement pendant login/signup (opérations async)
   if (isLoading) {
-    return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh' 
-      }}>
-        <Spinner />
-      </div>
-    );
+    return <Spinner centered />;
   }
 
-  if (!isAuthenticated) {
-    return null;
-  }
+  if (!isAuthenticated) return null;
 
   return (
     <div className="chat-layout">
