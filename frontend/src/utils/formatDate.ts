@@ -26,6 +26,34 @@ export function formatFullDate(date: string | Date): string {
   });
 }
 
+export function formatDateSeparator(dateInput: string | Date): string {
+  const date = new Date(dateInput);
+  const now = new Date();
+
+  const isToday =
+    date.getDate() === now.getDate() &&
+    date.getMonth() === now.getMonth() &&
+    date.getFullYear() === now.getFullYear();
+
+  if (isToday) return "AUJOURD'HUI";
+
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  const isYesterday =
+    date.getDate() === yesterday.getDate() &&
+    date.getMonth() === yesterday.getMonth() &&
+    date.getFullYear() === yesterday.getFullYear();
+
+  if (isYesterday) return 'HIER';
+
+  return date.toLocaleDateString('fr-FR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
 export function isToday(date: string | Date): boolean {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   const today = new Date();
