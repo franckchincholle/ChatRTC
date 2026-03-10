@@ -101,7 +101,7 @@
   height: 44px;
   border-radius: var(--radius-xl);
   background: var(--bg-surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--text-muted);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -170,7 +170,7 @@
   height: 44px;
   padding: 0;
   background: transparent;
-  border: 1px solid var(--border);
+  border: 1px solid var(--text-muted);
   border-radius: var(--radius-xl);
   color: var(--text-muted);
   font-size: 14px;
@@ -775,7 +775,8 @@
 
 .empty-state-icon {
   font-size: 40px;
-  opacity: 0.3;
+  opacity: 0.8;
+  color: var(--accent);
 }
 
 .empty-state-title {
@@ -994,7 +995,7 @@
   height: 44px;
   border-radius: var(--radius-xl);
   background: var(--bg-raised);
-  border: 1px solid var(--border-bright);
+  border: 1px solid var(--text-muted);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1327,7 +1328,7 @@
   height: 44px;
   border-radius: var(--radius-xl);
   background: transparent;
-  border: 1.5px dashed var(--border-bright);
+  border: 1.5px dashed var(--text-muted);
   color: var(--text-muted);
   font-size: 18px;
   cursor: pointer;
