@@ -36,13 +36,13 @@ export function ChannelList() {
       {/* Toast "Code copié" */}
       {inviteCopied && (
         <div className="invite-toast" role="status" aria-live="polite">
-          ✓ Code copié !
+          ✓ Code d'invitation copié !
         </div>
       )}
 
       <div className="channel-list">
         <div className="channel-section-header">
-          <span className="channel-section-label">Canaux texte</span>
+          <span className="channel-section-label">Canaux</span>
           {isOwner && (
             <button
               className="channel-section-add"
@@ -68,7 +68,7 @@ export function ChannelList() {
 
         {channels.length === 0 && (
           <div className="channel-empty">
-            Aucun canal.{isOwner ? ' Crée-en un avec +' : ''}
+            Aucun canal.{isOwner ? ' Crées-en un avec +' : ''}
           </div>
         )}
       </div>
