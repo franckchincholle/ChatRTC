@@ -13,7 +13,7 @@ interface CreateChannelModalProps {
 }
 
 export function CreateChannelModal({ isOpen, onClose }: CreateChannelModalProps) {
-  const [name, setName] = useState('');
+  const [name, setName]   = useState('');
   const [error, setError] = useState('');
   const { createChannel, isLoading } = useChannels();
 
@@ -43,27 +43,30 @@ export function CreateChannelModal({ isOpen, onClose }: CreateChannelModalProps)
       title="Créer un canal"
       footer={
         <>
-          <Button variant="primary" onClick={handleSubmit} disabled={isLoading}>
-            {isLoading ? 'Création...' : 'Créer'}
-          </Button>
-          <Button variant="danger" onClick={onClose}>
+          <Button variant="ghost" onClick={onClose} disabled={isLoading}>
             Annuler
+          </Button>
+          <Button variant="primary" onClick={handleSubmit} loading={isLoading}>
+            Créer
           </Button>
         </>
       }
     >
       <form onSubmit={handleSubmit}>
-        <div className="input-group">
-          <Input
-            type="text"
-            placeholder="Nom du canal"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            disabled={isLoading}
-            autoFocus
-          />
-          {error && <span className="auth-error">{error}</span>}
-        </div>
+        <Input
+          label="Nom du canal"
+          type="text"
+          placeholder="ex : général, dev, design"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          disabled={isLoading}
+          error={error}
+          autoFocus
+        />
+        <p className="modal-hint">
+          Le nom sera affiché avec un <span style={{ color: 'var(--accent)', fontFamily: 'var(--font-mono)' }}>#</span> devant.
+          Utilise des tirets à la place des espaces.
+        </p>
       </form>
     </Modal>
   );
