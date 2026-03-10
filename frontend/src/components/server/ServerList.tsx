@@ -5,30 +5,15 @@ import { useServers } from '@/hooks/useServer';
 import { ServerItem } from './ServerItem';
 import { CreateServerModal } from './CreateServerModal';
 import { JoinServerModal } from './JoinServerModal';
-import { Button } from '@/components/ui/Button';
 
 export function ServerList() {
   const { servers, selectedServer, selectServer } = useServers();
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showJoinModal, setShowJoinModal] = useState(false);
+  const [showJoinModal, setShowJoinModal]   = useState(false);
 
   return (
     <>
-      <div className="server-actions">
-        <Button 
-          variant="primary" 
-          onClick={() => setShowCreateModal(true)}
-        >
-          + Créer
-        </Button>
-        <Button 
-          variant="primary" 
-          onClick={() => setShowJoinModal(true)}
-        >
-          Rejoindre
-        </Button>
-      </div>
-
+      {/* Liste des serveurs */}
       <div className="server-list">
         {servers.map((server) => (
           <ServerItem
@@ -40,11 +25,42 @@ export function ServerList() {
         ))}
       </div>
 
+      {/* Séparateur + boutons d'action */}
+      <div className="server-divider" />
+
+      <div className="server-actions">
+        {/* Créer un serveur */}
+        <div className="server-action-wrapper">
+          <button
+            className="server-action-btn"
+            onClick={() => setShowCreateModal(true)}
+            aria-label="Créer un serveur"
+            title="Créer un serveur"
+          >
+            +
+          </button>
+          <div className="server-item-tooltip">Créer un serveur</div>
+        </div>
+
+        {/* Rejoindre un serveur */}
+        <div className="server-action-wrapper">
+          <button
+            className="server-action-btn"
+            onClick={() => setShowJoinModal(true)}
+            aria-label="Rejoindre un serveur"
+            title="Rejoindre un serveur"
+          >
+            ⤵
+          </button>
+          <div className="server-item-tooltip">Rejoindre un serveur</div>
+        </div>
+      </div>
+
+      {/* Modals */}
       <CreateServerModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
       />
-
       <JoinServerModal
         isOpen={showJoinModal}
         onClose={() => setShowJoinModal(false)}

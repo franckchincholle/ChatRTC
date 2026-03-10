@@ -1263,3 +1263,165 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
+
+/* ═══════════════════════════════════════════
+   SERVER COMPONENTS PATCH 
+   ═══════════════════════════════════════════ */
+
+/* ── SERVER ITEM WRAPPER (tooltip + ctx menu) ── */
+.server-item-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Tooltip : nom du serveur au hover */
+.server-item-tooltip {
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--bg-raised);
+  border: 1px solid var(--border-bright);
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  transform: translateY(-50%) translateX(-4px);
+  box-shadow: var(--shadow-md);
+  z-index: 200;
+
+  /* Flèche gauche */
+  &::before {
+    content: '';
+    position: absolute;
+    right: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 5px solid transparent;
+    border-right-color: var(--border-bright);
+  }
+}
+
+.server-item-wrapper:hover .server-item-tooltip,
+.server-action-wrapper:hover .server-item-tooltip {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+/* ── SERVER ACTION BUTTONS (créer / rejoindre) ── */
+.server-action-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.server-action-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-xl);
+  background: transparent;
+  border: 1.5px dashed var(--border-bright);
+  color: var(--text-muted);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-normal);
+  flex-shrink: 0;
+}
+
+.server-action-btn:hover {
+  border-color: var(--accent);
+  border-style: solid;
+  color: var(--accent);
+  background: var(--accent-bg);
+  border-radius: var(--radius-lg);
+}
+
+/* ── CONTEXT MENU ── */
+.server-ctx-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+}
+
+.server-ctx-menu {
+  position: absolute;
+  left: calc(100% + 8px);
+  top: 0;
+  background: var(--bg-raised);
+  border: 1px solid var(--border-bright);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: 200;
+  min-width: 180px;
+  overflow: hidden;
+  animation: ctxIn var(--transition-normal) cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@keyframes ctxIn {
+  from { opacity: 0; transform: scale(0.95) translateX(-4px); }
+  to   { opacity: 1; transform: scale(1) translateX(0); }
+}
+
+.server-ctx-label {
+  padding: 8px 12px 6px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border-bottom: 1px solid var(--border);
+}
+
+.server-ctx-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  text-align: left;
+}
+
+.server-ctx-item span {
+  font-size: 12px;
+  width: 14px;
+  flex-shrink: 0;
+}
+
+.server-ctx-item:hover {
+  background: var(--bg-hover);
+}
+
+.server-ctx-item.danger {
+  color: var(--danger);
+}
+
+.server-ctx-item.danger:hover {
+  background: var(--danger-bg);
+}
+
+/* ── MODAL HINT TEXT ── */
+.modal-hint {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  margin-top: var(--spacing-sm);
+  line-height: 1.5;
+}
