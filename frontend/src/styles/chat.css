@@ -87,6 +87,7 @@
 .server-list {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -155,6 +156,32 @@
 /* Actions sur le serveur (delete, etc) — masquées dans la rail */
 .server-item-name { display: none; }
 .server-item-actions { display: none; }
+
+.server-item-action {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: rgba(0, 0, 0, 0.55);
+  border: none;
+  color: var(--text-primary);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.server-item-action.leave {
+  color: var(--danger);
+}
+
+.server-item.active:hover .server-item-action {
+  opacity: 1;
+}
 
 /* Séparateur entre liste et bouton add */
 .server-divider {
@@ -1348,7 +1375,7 @@
 }
 
 /* ── CONTEXT MENU ── */
-.server-ctx-backdrop {
+/* .server-ctx-backdrop {
   position: fixed;
   inset: 0;
   z-index: 150;
@@ -1416,7 +1443,7 @@
 
 .server-ctx-item.danger:hover {
   background: var(--danger-bg);
-}
+} */
 
 /* ── MODAL HINT TEXT ── */
 .modal-hint {

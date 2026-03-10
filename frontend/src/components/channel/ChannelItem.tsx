@@ -9,10 +9,9 @@ interface ChannelItemProps {
   isSelected: boolean;
   onSelect: () => void;
   canManage: boolean;
-  onInvite?: () => void;
 }
 
-export function ChannelItem({ channel, isSelected, onSelect, canManage, onInvite }: ChannelItemProps) {
+export function ChannelItem({ channel, isSelected, onSelect, canManage }: ChannelItemProps) {
   const { updateChannel, deleteChannel } = useChannels();
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName]   = useState(channel.name);
@@ -85,14 +84,6 @@ export function ChannelItem({ channel, isSelected, onSelect, canManage, onInvite
 
         {canManage && (
           <div className="channel-item-actions">
-            <button
-              className="channel-action-btn"
-              onClick={(e) => { e.stopPropagation(); onInvite?.(); }}
-              title="Inviter des membres"
-              aria-label={`Inviter dans #${channel.name}`}
-            >
-              +
-            </button>
             <button
               className="channel-action-btn"
               onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
