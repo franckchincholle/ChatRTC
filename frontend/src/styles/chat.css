@@ -782,7 +782,7 @@
   font-family: var(--font-ui);
   font-size: var(--text-md);
   font-weight: 800;
-  color: var(--text-muted);
+  color: var(--accent);
   letter-spacing: -0.02em;
   text-align: center;
 }
@@ -790,7 +790,7 @@
 .empty-state-desc {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
-  color: var(--text-muted);
+  color: var(--text-primary);
   text-align: center;
   text-transform: uppercase;
   letter-spacing: 0.08em;
