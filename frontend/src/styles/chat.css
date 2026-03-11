@@ -1687,3 +1687,124 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
+
+/* ═══════════════════════════════════════════
+   UPDATE MEMBER MODAL
+   ═══════════════════════════════════════════ */
+
+/* Bouton ✎ sur MemberItem */
+.member-edit-btn {
+  width: 22px;
+  height: 22px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-xs);
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity var(--transition-fast), color var(--transition-fast), background var(--transition-fast);
+}
+
+.member-item:hover .member-edit-btn {
+  opacity: 1;
+}
+
+.member-edit-btn:hover {
+  color: var(--accent);
+  background: var(--accent-bg);
+}
+
+/* Corps de la modale */
+.update-member-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+/* Rappel de l'utilisateur ciblé */
+.update-member-target {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.update-member-username {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.update-member-current-role {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Options de rôle */
+.update-member-roles {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.update-member-role-option {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  text-align: left;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.update-member-role-option:hover {
+  border-color: var(--border-bright);
+  background: var(--bg-hover);
+}
+
+.update-member-role-option.selected {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.update-member-role-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.update-member-role-label {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.update-member-role-check {
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.update-member-role-desc {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  line-height: 1.4;
+}
