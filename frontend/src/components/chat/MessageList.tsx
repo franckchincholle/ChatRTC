@@ -49,7 +49,7 @@ export function MessageList() {
             Début du channel
           </p>
           <p className="messages-start-desc">
-            C'est le tout début de ce channel. Sois le premier à écrire !
+            Ce channel est encore vide. Soyez le premier à écrire !
           </p>
         </div>
       </div>

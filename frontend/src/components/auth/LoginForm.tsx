@@ -34,7 +34,6 @@ export function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="auth-form">
       <div className="auth-title">Connexion</div>
-      <div className="auth-subtitle">Content de te revoir</div>
 
       {/* Email */}
       <div className="auth-field">

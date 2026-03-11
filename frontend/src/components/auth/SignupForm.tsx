@@ -44,7 +44,6 @@ export function SignupForm() {
   return (
     <form onSubmit={handleSubmit} className="auth-form">
       <div className="auth-title">Créer un compte</div>
-      <div className="auth-subtitle">Rejoins la conversation</div>
 
       {/* Username */}
       <div className="auth-field">
