@@ -7,6 +7,7 @@ export interface Member {
   role: MemberRole;
   isOnline: boolean;   
   joinedAt: string;
+  isBanned: boolean;
 }
 
 export interface UpdateMemberRoleDTO {
