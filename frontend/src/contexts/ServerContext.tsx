@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { Server, ServerMember } from '@/types/server.types';
 import { serverService } from '@/services/api/server.service';
 import { socketService } from '@/services/socket/socket.service';
+import { SOCKET_EVENTS } from '@/services/socket/events';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface ServerContextType {
@@ -22,25 +23,40 @@ interface ServerContextType {
   clearError: () => void;
 }
 
-
 const ServerContext = createContext<ServerContextType | null>(null);
-
 
 export function ServerProvider({ children }: { children: React.ReactNode }) {
   const [servers, setServers] = useState<Server[]>([]);
   const [selectedServer, setSelectedServer] = useState<Server | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   useEffect(() => {
-    if (isAuthenticated) {
-      loadServers();
-    } else {
+    if (isAuthenticated) loadServers();
+    else {
       setServers([]);
       setSelectedServer(null);
     }
   }, [isAuthenticated]);
+
+  // Écoute kick/ban : si l'utilisateur courant est ciblé, le retirer du serveur
+  useEffect(() => {
+    const handleKickedOrBanned = ({ userId, serverId }: { userId: string; serverId: string }) => {
+      if (userId !== user?.id) return;
+      setServers((prev) => prev.filter((s) => s.id !== serverId));
+      setSelectedServer((prev) => prev?.id === serverId ? null : prev);
+      socketService.leaveServer(serverId);
+    };
+
+    socketService.on(SOCKET_EVENTS.MEMBER_KICKED, handleKickedOrBanned);
+    socketService.on(SOCKET_EVENTS.MEMBER_BANNED, handleKickedOrBanned);
+
+    return () => {
+      socketService.off(SOCKET_EVENTS.MEMBER_KICKED, handleKickedOrBanned);
+      socketService.off(SOCKET_EVENTS.MEMBER_BANNED, handleKickedOrBanned);
+    };
+  }, [user?.id]);
 
   const loadServers = useCallback(async (): Promise<void> => {
     try {
@@ -75,7 +91,7 @@ export function ServerProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(true);
       setError(null);
       const updatedServer = await serverService.update(id, { name });
-      setServers((prev) => prev.map((s) => (s.id === id ? updatedServer : s)));
+      setServers((prev) => prev.map((s) => s.id === id ? updatedServer : s));
       if (selectedServer?.id === id) setSelectedServer(updatedServer);
       return updatedServer;
     } catch (err: any) {
@@ -146,35 +162,29 @@ export function ServerProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const selectServer = useCallback((server: Server | null) => {
-    if (selectedServer) {
-      socketService.leaveServer(selectedServer.id);
-    }
+    if (selectedServer) socketService.leaveServer(selectedServer.id);
     setSelectedServer(server);
-    if (server) {
-      socketService.joinServer(server.id);
-    }
+    if (server) socketService.joinServer(server.id);
   }, [selectedServer]);
 
   const clearError = useCallback(() => setError(null), []);
 
   return (
-    <ServerContext.Provider
-      value={{
-        servers,
-        selectedServer,
-        isLoading,
-        error,
-        createServer,
-        updateServer,
-        deleteServer,
-        joinServer,
-        leaveServer,
-        generateInviteCode,
-        selectServer,
-        refreshServers: loadServers,
-        clearError,
-      }}
-    >
+    <ServerContext.Provider value={{
+      servers,
+      selectedServer,
+      isLoading,
+      error,
+      createServer,
+      updateServer,
+      deleteServer,
+      joinServer,
+      leaveServer,
+      generateInviteCode,
+      selectServer,
+      refreshServers: loadServers,
+      clearError,
+    }}>
       {children}
     </ServerContext.Provider>
   );
@@ -182,8 +192,6 @@ export function ServerProvider({ children }: { children: React.ReactNode }) {
 
 export function useServersContext(): ServerContextType {
   const context = useContext(ServerContext);
-  if (!context) {
-    throw new Error('useServersContext doit être utilisé dans un ServerProvider');
-  }
+  if (!context) throw new Error('useServersContext doit être utilisé dans un ServerProvider');
   return context;
 }

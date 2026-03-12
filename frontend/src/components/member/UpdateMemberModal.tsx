@@ -32,7 +32,7 @@ export function UpdateMemberModal({ isOpen, onClose, member }: UpdateMemberModal
   const [banDuration, setBanDuration]   = useState<string | null>(null);
   const [confirmKick, setConfirmKick]   = useState(false);
   const [error, setError]               = useState('');
-  const { updateMemberRole, unbanMember, isLoading } = useMembers();
+  const { updateMemberRole, kickMember, banMember, unbanMember, isLoading } = useMembers();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,16 +46,24 @@ export function UpdateMemberModal({ isOpen, onClose, member }: UpdateMemberModal
     }
   };
 
-  const handleKick = () => {
+  const handleKick = async () => {
     if (!confirmKick) { setConfirmKick(true); return; }
-    // TODO: appel API kick
-    handleClose();
+    try {
+      await kickMember(member.userId);
+      handleClose();
+    } catch (err: any) {
+      setError(err.message);
+    }
   };
 
-  const handleBan = () => {
+  const handleBan = async () => {
     if (!banDuration) return;
-    // TODO: appel API ban avec banDuration
-    handleClose();
+    try {
+      await banMember(member.userId, banDuration as '1w' | '2w' | '1m' | 'perm');
+      handleClose();
+    } catch (err: any) {
+      setError(err.message);
+    }
   };
 
   const handleUnban = async () => {
