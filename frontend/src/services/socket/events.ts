@@ -4,26 +4,23 @@ export const SOCKET_EVENTS = {
   CONNECT_ERROR: 'connect_error',
 
   // Client → Serveur
-
   JOIN_CHANNEL: 'join_channel',
   LEAVE_CHANNEL: 'leave_channel',
   TYPING: 'user:typing',
   STOP_TYPING: 'user:stop_typing',
 
-  // Serveur → Client
-
-  // Messages
+  // Serveur → Client — Messages
   NEW_MESSAGE: 'message:received',
   MESSAGE_DELETED: 'message:deleted',
 
-  // Channels
+  // Serveur → Client — Channels
   CHANNEL_CREATED: 'channel:created',
   CHANNEL_UPDATED: 'channel:updated',
   CHANNEL_DELETED: 'channel:deleted',
   CHANNEL_USER_JOINED: 'channel:user_joined',
   CHANNEL_USER_LEFT: 'channel:user_left',
 
-  // Servers
+  // Serveur → Client — Servers
   JOIN_SERVER: 'join_server',
   LEAVE_SERVER: 'leave_server',
   SERVER_UPDATED: 'server:updated',
@@ -31,14 +28,17 @@ export const SOCKET_EVENTS = {
   SERVER_MEMBER_JOINED: 'server:member_joined',
   SERVER_MEMBER_LEFT: 'server:member_left',
 
-  // Users
+  // Serveur → Client — Users
   USER_TYPING: 'user:typing',
   USER_STOP_TYPING: 'user:stop_typing',
   USER_STATUS_CHANGED: 'user:status_changed',
 
-  // Members
+  // Serveur → Client — Members
   MEMBER_ROLE_UPDATED: 'member:role_updated',
-  
+  MEMBER_KICKED: 'member:kicked',
+  MEMBER_BANNED: 'member:banned',
+  MEMBER_UNBANNED: 'member:unbanned',
+
 } as const;
 
 export type SocketEvent = typeof SOCKET_EVENTS[keyof typeof SOCKET_EVENTS];

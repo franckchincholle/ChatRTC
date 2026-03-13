@@ -67,9 +67,14 @@ export function MemberItem({ member, dimmed = false }: MemberItemProps) {
             {member.username}
             {isSelf && <span className="member-self-tag"> vous</span>}
           </span>
-          <span className={`member-role member-role-${member.role.toLowerCase()}`}>
-            {ROLE_LABELS[member.role]}
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span className={`member-role member-role-${member.role.toLowerCase()}`}>
+              {ROLE_LABELS[member.role]}
+            </span>
+            {member.isBanned && (
+              <span className="member-banned-tag">banni</span>
+            )}
+          </div>
         </div>
 
         {/* Icône édition rôle */}

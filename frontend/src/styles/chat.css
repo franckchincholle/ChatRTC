@@ -1677,6 +1677,20 @@
   letter-spacing: 0.06em;
 }
 
+.member-banned-tag {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  border-radius: 3px;
+  padding: 1px 5px;
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+
 /* Empty state membres */
 .members-empty {
   padding: var(--spacing-md);
@@ -1783,6 +1797,11 @@
   background: var(--accent-bg);
 }
 
+.update-member-role-option.selected.danger {
+  border-color: var(--danger);
+  background: var(--danger-bg);
+}
+
 .update-member-role-header {
   display: flex;
   align-items: center;
@@ -1800,6 +1819,10 @@
   font-size: 12px;
   color: var(--accent);
   font-weight: 700;
+}
+
+.update-member-role-check.danger {
+  color: var(--danger);
 }
 
 .update-member-role-desc {
