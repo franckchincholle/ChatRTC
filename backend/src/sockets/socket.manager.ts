@@ -114,6 +114,8 @@ export class SocketManager {
   static emitMemberUnbanned(serverId: string, userId: string): void {
     // Notifier uniquement les admins/owner dans la room
     this.io.to(`server:${serverId}`).emit('member:unbanned', { userId, serverId });
+    // Notifier directement l'utilisateur débanni (il n'est plus dans la server room)
+    this.io.to(`user:${userId}`).emit('member:unbanned', { userId, serverId });
   }
 
   // ── Méthodes existantes ──────────────────────────────────────────────────

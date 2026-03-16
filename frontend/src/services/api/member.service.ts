@@ -22,7 +22,7 @@ class MemberService {
 
   async updateRole(serverId: string, userId: string, data: UpdateMemberRoleDTO): Promise<Member> {
     const response = await apiClient.put<{ data: any }>(
-      `/servers/${serverId}/members/${userId}`,
+      `/api/servers/${serverId}/members/${userId}`,
       data
     );
     return {

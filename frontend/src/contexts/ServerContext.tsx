@@ -49,12 +49,19 @@ export function ServerProvider({ children }: { children: React.ReactNode }) {
       socketService.leaveServer(serverId);
     };
 
+    const handleUnbanned = ({ userId }: { userId: string; serverId: string }) => {
+      if (userId !== user?.id) return;
+      loadServers();
+    };
+
     socketService.on(SOCKET_EVENTS.MEMBER_KICKED, handleKickedOrBanned);
     socketService.on(SOCKET_EVENTS.MEMBER_BANNED, handleKickedOrBanned);
+    socketService.on(SOCKET_EVENTS.MEMBER_UNBANNED, handleUnbanned);
 
     return () => {
       socketService.off(SOCKET_EVENTS.MEMBER_KICKED, handleKickedOrBanned);
       socketService.off(SOCKET_EVENTS.MEMBER_BANNED, handleKickedOrBanned);
+      socketService.off(SOCKET_EVENTS.MEMBER_UNBANNED, handleUnbanned);
     };
   }, [user?.id]);
 
