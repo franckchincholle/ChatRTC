@@ -5,6 +5,7 @@ import { SOCKET_EVENTS } from './events';
 class SocketService {
   private socket: Socket | null = null;
   private isConnected: boolean = false;
+  private pendingListeners: { event: string; callback: (...args: any[]) => void }[] = [];
 
   connect(token: string): void {
     if (this.socket?.connected) {
@@ -19,6 +20,12 @@ class SocketService {
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
     });
+
+    // Appliquer les listeners enregistrés avant la connexion
+    this.pendingListeners.forEach(({ event, callback }) => {
+      this.socket!.on(event, callback);
+    });
+    this.pendingListeners = [];
 
     this.setupConnectionListeners();
   }
@@ -60,14 +67,25 @@ class SocketService {
 
   on(event: string, callback: (...args: any[]) => void): void {
     if (!this.socket) {
-      console.warn('Socket not initialized');
+      // Socket pas encore connecté — mémoriser pour appliquer au connect()
+      this.pendingListeners.push({ event, callback });
       return;
     }
     this.socket.on(event, callback);
   }
 
   off(event: string, callback?: (...args: any[]) => void): void {
-    if (!this.socket) return;
+    if (!this.socket) {
+      // Retirer aussi de la queue si pas encore connecté
+      if (callback) {
+        this.pendingListeners = this.pendingListeners.filter(
+          (l) => !(l.event === event && l.callback === callback)
+        );
+      } else {
+        this.pendingListeners = this.pendingListeners.filter((l) => l.event !== event);
+      }
+      return;
+    }
     if (callback) {
       this.socket.off(event, callback);
     } else {
