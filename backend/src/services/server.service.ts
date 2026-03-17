@@ -32,10 +32,15 @@ export class ServerService {
     const invitation = await this.serverRepository.findInvitationByCode(inviteCode);
     if (!invitation) throw new BadRequestError('Invalid invite code');
 
+    if (invitation.expiresAt && invitation.expiresAt < new Date()) {
+      throw new BadRequestError('Invite code has expired');
+    }
+
     const isBanned = await serverBanRepository.isBanned(userId, invitation.serverId);
     if (isBanned) throw new ForbiddenError('You are banned from this server');
 
     const newMember = await serverMemberRepository.addMember(userId, invitation.serverId, 'MEMBER');
+    await this.serverRepository.deleteInvitation(inviteCode);
     SocketManager.getIO().to(`server:${invitation.serverId}`).emit('server:member_joined', { userId, serverId: invitation.serverId });
     return newMember;
   }
