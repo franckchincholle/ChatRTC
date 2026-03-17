@@ -78,6 +78,12 @@ export class ServerRepository {
     })
   }
 
+  async deleteInvitation(code: string) {
+    return await prisma.invitation.delete({
+      where: { code }
+    });
+  }
+
   async transferOwnership(serverId: string, oldOwnerId: string, newOwnerId: string): Promise<void> {
     await prisma.$transaction([
       prisma.server.update({
