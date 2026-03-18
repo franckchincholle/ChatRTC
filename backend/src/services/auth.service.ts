@@ -1,10 +1,8 @@
 import { userRepository } from '../repositories/user.repository';
 import { hashPassword, comparePassword } from '../utils/bcrypt';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/jwt';
-import { BadRequestError, UnauthorizedError, ConflictError } from '../utils/errors';
+import { UnauthorizedError, ConflictError } from '../utils/errors';
 import type { SignupData, LoginData, AuthResponse } from '../types/auth.types';
-import type { User } from '@prisma/client';
-
 export class AuthService {
 
     async signup(data: SignupData): Promise<AuthResponse> {
@@ -105,7 +103,7 @@ export class AuthService {
 
             return { accessToken };
             
-        } catch (error) {
+        } catch (_error) {
             throw new UnauthorizedError('Refresh token invalide ou expiré');
         }
     }

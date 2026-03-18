@@ -24,7 +24,7 @@ export const socketAuthMiddleware = async (socket: AppSocket, next: (err?: Error
         socket.data.username = user.username;
 
         next();
-    } catch (error) {
+    } catch (_error) {
         next(new Error('Authentication error: Invalid or expired token'));
     }
 };
