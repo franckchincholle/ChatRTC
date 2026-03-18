@@ -9,6 +9,7 @@ export interface Message {
   userId: string;
   channelId: string;
   createdAt: string;
+  updatedAt: string;
   author: MessageAuthor;  
 }
 
