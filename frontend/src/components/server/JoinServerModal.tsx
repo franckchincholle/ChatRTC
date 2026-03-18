@@ -31,8 +31,8 @@ export function JoinServerModal({ isOpen, onClose }: JoinServerModalProps) {
       await joinServer(inviteCode);
       setInviteCode('');
       onClose();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
     }
   };
 

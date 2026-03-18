@@ -31,8 +31,8 @@ export function CreateChannelModal({ isOpen, onClose }: CreateChannelModalProps)
       await createChannel(name);
       setName('');
       onClose();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
     }
   };
 

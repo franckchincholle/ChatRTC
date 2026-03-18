@@ -38,8 +38,8 @@ export function EditServerModal({ isOpen, onClose, server }: EditServerModalProp
     try {
       await updateServer(server.id, name.trim());
       onClose();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
     }
   };
 
@@ -51,8 +51,8 @@ export function EditServerModal({ isOpen, onClose, server }: EditServerModalProp
     try {
       await deleteServer(server.id);
       onClose();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
     }
   };
 
