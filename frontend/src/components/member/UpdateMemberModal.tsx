@@ -41,8 +41,8 @@ export function UpdateMemberModal({ isOpen, onClose, member }: UpdateMemberModal
     try {
       await updateMemberRole(member.userId, selectedRole);
       handleClose();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
     }
   };
 
@@ -51,8 +51,8 @@ export function UpdateMemberModal({ isOpen, onClose, member }: UpdateMemberModal
     try {
       await kickMember(member.userId);
       handleClose();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
     }
   };
 
@@ -61,8 +61,8 @@ export function UpdateMemberModal({ isOpen, onClose, member }: UpdateMemberModal
     try {
       await banMember(member.userId, banDuration as '1w' | '2w' | '1m' | 'perm');
       handleClose();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
     }
   };
 
@@ -70,8 +70,8 @@ export function UpdateMemberModal({ isOpen, onClose, member }: UpdateMemberModal
     try {
       await unbanMember(member.userId);
       handleClose();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
     }
   };
 
@@ -185,7 +185,7 @@ export function UpdateMemberModal({ isOpen, onClose, member }: UpdateMemberModal
 
         {confirmKick && (
           <p className="modal-hint" style={{ color: 'var(--danger)', marginBottom: '12px' }}>
-            ⚠ Clique à nouveau sur "Confirmer le kick" pour expulser {member.username}.
+            ⚠ Clique à nouveau sur &quot;Confirmer le kick&quot; pour expulser {member.username}.
           </p>
         )}
 

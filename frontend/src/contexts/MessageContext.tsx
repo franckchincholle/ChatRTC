@@ -26,7 +26,7 @@ export function MessageProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   const { selectedChannel } = useChannelsContext();
-  const { selectedServer } = useServersContext(); 
+  const { selectedServer } = useServersContext();
 
   useEffect(() => {
     if (!selectedChannel || !selectedServer) return;
@@ -42,13 +42,11 @@ export function MessageProvider({ children }: { children: React.ReactNode }) {
     };
 
     joinWhenReady();
-    
 
     return () => {
       console.log('🔍 LEAVE CHANNEL EFFECT:');
-    console.log('  - leaving channel:', selectedChannel.id, selectedChannel.name);
+      console.log('  - leaving channel:', selectedChannel.id, selectedChannel.name);
       socketService.leaveChannel(selectedServer.id, selectedChannel.id);
-      
     };
   }, [selectedChannel?.id, selectedServer?.id]);
 
@@ -63,11 +61,12 @@ export function MessageProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!selectedChannel) return;
 
-    const handleNewMessage = (message: Message) => {
-      setMessages((prev) => [...prev, message]);
+    const handleNewMessage = (data: unknown) => {
+      setMessages((prev) => [...prev, data as Message]);
     };
 
-    const handleMessageDeleted = ({ messageId }: { messageId: string }) => {
+    const handleMessageDeleted = (data: unknown) => {
+      const { messageId } = data as { messageId: string };
       setMessages((prev) => prev.filter((m) => m.id !== messageId));
     };
 
@@ -83,14 +82,13 @@ export function MessageProvider({ children }: { children: React.ReactNode }) {
   const loadMessages = useCallback(async (channelId?: string): Promise<void> => {
     const id = channelId ?? selectedChannel?.id;
     if (!id) return;
-
     try {
       setIsLoading(true);
       setError(null);
       const data = await messageService.getByChannelId(id);
       setMessages(data);
-    } catch (err: any) {
-      setError(err.message || 'Échec du chargement des messages');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Échec du chargement des messages");
     } finally {
       setIsLoading(false);
     }
@@ -98,24 +96,22 @@ export function MessageProvider({ children }: { children: React.ReactNode }) {
 
   const sendMessage = useCallback(async (content: string): Promise<void> => {
     if (!selectedChannel) throw new Error('Aucun canal sélectionné');
-
     try {
       setError(null);
       await messageService.send(selectedChannel.id, { content });
-    } catch (err: any) {
-      setError(err.message || "Échec de l'envoi du message");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Échec de l'envoi du message");
       throw err;
     }
   }, [selectedChannel]);
 
   const deleteMessage = useCallback(async (messageId: string): Promise<void> => {
     if (!selectedChannel) throw new Error('Aucun canal sélectionné');
-
     try {
       setError(null);
       await messageService.delete(selectedChannel.id, messageId);
-    } catch (err: any) {
-      setError(err.message || 'Échec de la suppression du message');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Échec de la suppression du message");
       throw err;
     }
   }, [selectedChannel]);
@@ -123,17 +119,12 @@ export function MessageProvider({ children }: { children: React.ReactNode }) {
   const clearError = useCallback(() => setError(null), []);
 
   return (
-    <MessageContext.Provider
-      value={{
-        messages,
-        isLoading,
-        error,
-        sendMessage,
-        deleteMessage,
-        refreshMessages: () => loadMessages(),
-        clearError,
-      }}
-    >
+    <MessageContext.Provider value={{
+      messages, isLoading, error,
+      sendMessage, deleteMessage,
+      refreshMessages: () => loadMessages(),
+      clearError,
+    }}>
       {children}
     </MessageContext.Provider>
   );
@@ -141,8 +132,6 @@ export function MessageProvider({ children }: { children: React.ReactNode }) {
 
 export function useMessagesContext(): MessageContextType {
   const context = useContext(MessageContext);
-  if (!context) {
-    throw new Error('useMessagesContext doit être utilisé dans un MessageProvider');
-  }
+  if (!context) throw new Error('useMessagesContext doit être utilisé dans un MessageProvider');
   return context;
 }

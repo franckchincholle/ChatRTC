@@ -55,8 +55,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsAuthenticated(true);
 
       return authData.user;
-    } catch (err: any) {
-      setError(err.message || 'Échec de la connexion');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Échec de la connexion");
       throw err;
     } finally {
       setIsLoading(false);
@@ -77,8 +77,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsAuthenticated(true);
 
       return authData.user;
-    } catch (err: any) {
-      setError(err.message || "Échec de l'inscription");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Échec de l'inscription");
       throw err;
     } finally {
       setIsLoading(false);

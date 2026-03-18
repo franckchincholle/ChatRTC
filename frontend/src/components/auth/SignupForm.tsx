@@ -48,7 +48,7 @@ export function SignupForm() {
       {/* Username */}
       <div className="auth-field">
         <label className="auth-field-label" htmlFor="signup-username">
-          Nom d'utilisateur
+          Nom d&apos;utilisateur
         </label>
         <input
           id="signup-username"

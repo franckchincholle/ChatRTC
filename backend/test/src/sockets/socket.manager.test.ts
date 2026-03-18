@@ -10,13 +10,12 @@ describe('SocketManager', () => {
     httpServer = new HTTPServer();
     (SocketManager as any).io = null;
     (SocketManager as any).onlineUsers = new Map();
+    (SocketManager as any).userSockets = new Map();
     jest.clearAllMocks();
   });
 
   it('should throw error if getIO is called before init', () => {
-    expect(() => SocketManager.getIO()).toThrow(
-      "Socket.io n'est pas initialisé."
-    );
+    expect(() => SocketManager.getIO()).toThrow("Socket.io n'est pas initialisé.");
   });
 
   it('should initialize correctly', () => {
@@ -27,13 +26,9 @@ describe('SocketManager', () => {
 
   it('devrait gérer la connexion d un utilisateur et rejoindre les rooms', async () => {
     const io = SocketManager.init(httpServer);
-
     const mockServers = [{ id: 'server-1' }];
-
     const repoInstance = (SocketManager as any).serverRepository;
-    const findSpy = jest
-      .spyOn(repoInstance, 'findByUserId')
-      .mockResolvedValue(mockServers);
+    const findSpy = jest.spyOn(repoInstance, 'findByUserId').mockResolvedValue(mockServers);
 
     const mockSocket: any = {
       id: 'socket-id',
@@ -46,7 +41,6 @@ describe('SocketManager', () => {
     };
 
     const connectionListener = io.listeners('connection')[0];
-
     await connectionListener(mockSocket);
 
     expect(findSpy).toHaveBeenCalledWith('user-123');
@@ -62,13 +56,11 @@ describe('SocketManager', () => {
     const repoInstance = (SocketManager as any).serverRepository;
     jest.spyOn(repoInstance, 'findByUserId').mockResolvedValue([]);
 
-    let typingCallback: any;
+    const eventCallbacks: Record<string, any> = {};
     const mockSocket: any = {
       data: { userId: 'u1', username: 'user1' },
       join: jest.fn(),
-      on: jest.fn((event, cb) => {
-        if (event === 'user:typing') typingCallback = cb;
-      }),
+      on: jest.fn((event, cb) => { eventCallbacks[event] = cb; }),
       to: jest.fn().mockReturnThis(),
       emit: jest.fn(),
       rooms: new Set(),
@@ -77,16 +69,13 @@ describe('SocketManager', () => {
     const connectionListener = io.listeners('connection')[0];
     await connectionListener(mockSocket);
 
-    typingCallback({ channelId: 'c1', serverId: 's1' });
+    eventCallbacks['user:typing']({ channelId: 'c1', serverId: 's1' });
 
     expect(mockSocket.to).toHaveBeenCalledWith('channel:c1');
-    expect(mockSocket.emit).toHaveBeenCalledWith(
-      'user:typing',
-      expect.objectContaining({
-        channelId: 'c1',
-        user: { userId: 'u1', username: 'user1' },
-      })
-    );
+    expect(mockSocket.emit).toHaveBeenCalledWith('user:typing', expect.objectContaining({
+      channelId: 'c1',
+      user: { userId: 'u1', username: 'user1' },
+    }));
   });
 
   it('devrait gérer la déconnexion d un utilisateur', async () => {
@@ -94,22 +83,26 @@ describe('SocketManager', () => {
     const repoInstance = (SocketManager as any).serverRepository;
     jest.spyOn(repoInstance, 'findByUserId').mockResolvedValue([{ id: 's1' }]);
 
-    let disconnectCallback: any;
+    (SocketManager as any).onlineUsers.set('s1', new Set(['u1']));
+
+    const eventCallbacks: Record<string, any> = {};
     const mockSocket: any = {
       data: { userId: 'u1' },
+      id: 'socket-id',
       join: jest.fn(),
-      on: jest.fn((event, cb) => {
-        if (event === 'disconnect') disconnectCallback = cb;
-      }),
+      on: jest.fn((event, cb) => { eventCallbacks[event] = cb; }),
       to: jest.fn().mockReturnThis(),
       emit: jest.fn(),
-      rooms: new Set(),
+      // rooms doit contenir la room serveur pour que disconnecting la trouve
+      rooms: new Set(['socket-id', 'server:s1']),
     };
 
     const connectionListener = io.listeners('connection')[0];
     await connectionListener(mockSocket);
 
-    disconnectCallback();
+    // Le code utilise 'disconnecting' et non 'disconnect'
+    expect(eventCallbacks['disconnecting']).toBeDefined();
+    eventCallbacks['disconnecting']();
 
     const online = SocketManager.getOnlineUsers('s1');
     expect(online).not.toContain('u1');

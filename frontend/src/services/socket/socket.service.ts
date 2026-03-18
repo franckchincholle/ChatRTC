@@ -5,7 +5,7 @@ import { SOCKET_EVENTS } from './events';
 class SocketService {
   private socket: Socket | null = null;
   private isConnected: boolean = false;
-  private pendingListeners: { event: string; callback: (...args: any[]) => void }[] = [];
+  private pendingListeners: { event: string; callback: (data: unknown) => void }[] = [];
 
   connect(token: string): void {
     if (this.socket?.connected) {
@@ -23,7 +23,8 @@ class SocketService {
 
     // Appliquer les listeners enregistrés avant la connexion
     this.pendingListeners.forEach(({ event, callback }) => {
-      this.socket!.on(event, callback);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      this.socket!.on(event, callback as any);
     });
     this.pendingListeners = [];
 
@@ -57,7 +58,7 @@ class SocketService {
     }
   }
 
-  emit(event: string, data?: any): void {
+  emit(event: string, data?: unknown): void {
     if (!this.socket?.connected) {
       console.warn('Socket not connected, cannot emit:', event);
       return;
@@ -65,18 +66,17 @@ class SocketService {
     this.socket.emit(event, data);
   }
 
-  on(event: string, callback: (...args: any[]) => void): void {
+  on(event: string, callback: (data: unknown) => void): void {
     if (!this.socket) {
-      // Socket pas encore connecté — mémoriser pour appliquer au connect()
       this.pendingListeners.push({ event, callback });
       return;
     }
-    this.socket.on(event, callback);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.socket.on(event, callback as any);
   }
 
-  off(event: string, callback?: (...args: any[]) => void): void {
+  off(event: string, callback?: (data: unknown) => void): void {
     if (!this.socket) {
-      // Retirer aussi de la queue si pas encore connecté
       if (callback) {
         this.pendingListeners = this.pendingListeners.filter(
           (l) => !(l.event === event && l.callback === callback)
@@ -87,7 +87,8 @@ class SocketService {
       return;
     }
     if (callback) {
-      this.socket.off(event, callback);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      this.socket.off(event, callback as any);
     } else {
       this.socket.off(event);
     }
@@ -110,14 +111,12 @@ class SocketService {
   }
 
   joinChannel(serverId: string, channelId: string): void {
-      console.log(`🔍 EMIT join_channel: serverId=${serverId}, channelId=${channelId}`);
-
+    console.log(`🔍 EMIT join_channel: serverId=${serverId}, channelId=${channelId}`);
     this.emit(SOCKET_EVENTS.JOIN_CHANNEL, { serverId, channelId });
   }
 
   leaveChannel(serverId: string, channelId: string): void {
-      console.log(`🔍 EMIT leave_channel: serverId=${serverId}, channelId=${channelId}`);
-
+    console.log(`🔍 EMIT leave_channel: serverId=${serverId}, channelId=${channelId}`);
     this.emit(SOCKET_EVENTS.LEAVE_CHANNEL, { serverId, channelId });
   }
 
