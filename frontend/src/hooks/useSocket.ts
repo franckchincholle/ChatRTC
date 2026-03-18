@@ -12,7 +12,6 @@ export function useSocket() {
       console.warn('No token found, cannot connect to socket');
       return;
     }
-
     socketService.connect(token);
   }, []);
 
@@ -20,15 +19,15 @@ export function useSocket() {
     socketService.disconnect();
   }, []);
 
-  const emit = useCallback((event: string, data?: any) => {
+  const emit = useCallback((event: string, data?: unknown) => {
     socketService.emit(event, data);
   }, []);
 
-  const on = useCallback((event: string, callback: (...args: any[]) => void) => {
+  const on = useCallback((event: string, callback: (data: unknown) => void) => {
     socketService.on(event, callback);
   }, []);
 
-  const off = useCallback((event: string, callback?: (...args: any[]) => void) => {
+  const off = useCallback((event: string, callback?: (data: unknown) => void) => {
     socketService.off(event, callback);
   }, []);
 
@@ -39,12 +38,8 @@ export function useSocket() {
     };
 
     checkConnection();
-
     const interval = setInterval(checkConnection, 1000);
-
-    return () => {
-      clearInterval(interval);
-    };
+    return () => clearInterval(interval);
   }, []);
 
   return {

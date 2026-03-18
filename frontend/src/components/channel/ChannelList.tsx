@@ -36,7 +36,7 @@ export function ChannelList() {
       {/* Toast "Code copié" */}
       {inviteCopied && (
         <div className="invite-toast" role="status" aria-live="polite">
-          ✓ Code d'invitation copié !
+          ✓ Code d&apos;invitation copié !
         </div>
       )}
 

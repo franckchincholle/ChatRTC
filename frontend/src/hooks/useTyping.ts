@@ -46,15 +46,13 @@ export function useTyping(
       return;
     }
 
-    const handleUserTyping = ({
-      serverId: sid,
-      channelId: cid,
-      user,
-    }: {
-      serverId: string;
-      channelId: string;
-      user: TypingUser;
-    }) => {
+    const handleUserTyping = (data: unknown) => {
+      const { serverId: sid, channelId: cid, user } = data as {
+        serverId: string;
+        channelId: string;
+        user: TypingUser;
+      };
+
       if (sid !== serverId || cid !== channelId) return;
       if (user.userId === currentUserId) return; 
 
@@ -68,15 +66,13 @@ export function useTyping(
       }, TYPING_TIMEOUT);
     };
 
-    const handleUserStopTyping = ({
-      serverId: sid,
-      channelId: cid,
-      userId,
-    }: {
-      serverId: string;
-      channelId: string;
-      userId: string;
-    }) => {
+    const handleUserStopTyping = (data: unknown) => {
+      const { serverId: sid, channelId: cid, userId } = data as {
+        serverId: string;
+        channelId: string;
+        userId: string;
+      };
+
       if (sid !== serverId || cid !== channelId) return;
       setTypingUsers((prev) => prev.filter((u) => u.userId !== userId));
     };
