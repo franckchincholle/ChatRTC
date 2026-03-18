@@ -6,7 +6,6 @@ import { memberService, BanDuration } from '@/services/api/member.service';
 import { socketService } from '@/services/socket/socket.service';
 import { SOCKET_EVENTS } from '@/services/socket/events';
 import { useServersContext } from '@/contexts/ServerContext';
-import { useAuth } from '@/contexts/AuthContext';
 
 interface MemberContextType {
   members: Member[];
@@ -31,7 +30,6 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { selectedServer } = useServersContext();
-  const { user: _user } = useAuth();
 
   useEffect(() => {
     if (selectedServer) loadMembers(selectedServer.id);
