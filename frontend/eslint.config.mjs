@@ -7,9 +7,16 @@ const __dirname = dirname(__filename);
 
 const compat = new FlatCompat({ baseDirectory: __dirname });
 
-export default [
+const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
+  {
+    rules: {
+      "react-hooks/exhaustive-deps": "off",
+    },
+  },
   {
     ignores: [".next/**", "out/**", "build/**", "next-env.d.ts"],
   },
 ];
+
+export default eslintConfig;

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { Message } from '@/types/message.types';
 import { useMessages } from '@/hooks/useMessage';
 import { useAuth } from '@/hooks/useAuth';
@@ -65,7 +66,7 @@ export function MessageItem({ message, continued = false }: MessageItemProps) {
       <div className="message-continued">
         <div className="message-content">
           {isGif(message.content) ? (
-            <img
+            <Image
               src={message.content}
               alt="GIF"
               className="message-gif"
@@ -133,7 +134,7 @@ export function MessageItem({ message, continued = false }: MessageItemProps) {
 
         <div className="message-content">
           {isGif(message.content) ? (
-            <img
+            <Image
               src={message.content}
               alt="GIF"
               className="message-gif"
