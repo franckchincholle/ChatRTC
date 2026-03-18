@@ -1,5 +1,6 @@
 import { Server as SocketIOServer, Socket as SocketIOSocket } from 'socket.io';
 import { ChannelResponse } from './channel.types';
+import { MessageWithAuthor } from '../repositories/message.repository';
 
 export interface ListenEvents {
   'join_server': (data: { serverId: string }) => void;
@@ -12,8 +13,9 @@ export interface ListenEvents {
 
 export interface EmitEvents {
   // Messages
-  'message:received': (message: any) => void;
-  'message:deleted': (data: { messageId: string; channelId: string }) => void;
+  'message:received': (message: MessageWithAuthor) => void;
+  'message:updated':  (data: { message: MessageWithAuthor; channelId: string }) => void;
+  'message:deleted':  (data: { messageId: string; channelId: string }) => void;
 
   // Members
   'member:role_updated': (data: { userId: string; serverId: string; role: 'OWNER' | 'ADMIN' | 'MEMBER' }) => void;

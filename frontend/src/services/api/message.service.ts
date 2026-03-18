@@ -18,10 +18,17 @@ export const messageService = {
     return res.data;
   },
 
+  update: async (channelId: string, messageId: string, data: { content: string }): Promise<Message> => {
+    const res = await apiClient.put<ApiResponse<Message>>(
+      `/channels/${channelId}/messages/${messageId}`,
+      data
+    );
+    return res.data;
+  },
+
   delete: async (channelId: string, messageId: string): Promise<void> => {
     await apiClient.delete<ApiResponse<void>>(
       `/channels/${channelId}/messages/${messageId}`
     );
   },
-
 };
