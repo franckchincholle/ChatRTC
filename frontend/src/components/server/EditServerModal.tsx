@@ -104,7 +104,7 @@ export function EditServerModal({ isOpen, onClose, server }: EditServerModalProp
         />
         {confirmDelete && (
           <p className="modal-hint" style={{ color: 'var(--danger)', marginTop: '12px' }}>
-            ⚠ Cette action est irréversible. Clique à nouveau sur "Confirmer" pour supprimer définitivement.
+            ⚠ Cette action est irréversible. Clique à nouveau sur &quot;Confirmer&quot; pour supprimer définitivement.
           </p>
         )}
       </form>

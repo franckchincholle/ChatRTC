@@ -185,7 +185,7 @@ export function UpdateMemberModal({ isOpen, onClose, member }: UpdateMemberModal
 
         {confirmKick && (
           <p className="modal-hint" style={{ color: 'var(--danger)', marginBottom: '12px' }}>
-            ⚠ Clique à nouveau sur "Confirmer le kick" pour expulser {member.username}.
+            ⚠ Clique à nouveau sur &quot;Confirmer le kick&quot; pour expulser {member.username}.
           </p>
         )}
 
