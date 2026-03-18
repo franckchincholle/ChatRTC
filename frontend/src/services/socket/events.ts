@@ -11,6 +11,7 @@ export const SOCKET_EVENTS = {
 
   // Serveur → Client — Messages
   NEW_MESSAGE: 'message:received',
+  MESSAGE_UPDATED: 'message:updated',
   MESSAGE_DELETED: 'message:deleted',
 
   // Serveur → Client — Channels

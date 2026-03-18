@@ -13,6 +13,7 @@ interface MessageContextType {
   isLoading: boolean;
   error: string | null;
   sendMessage: (content: string) => Promise<void>;
+  updateMessage: (messageId: string, content: string) => Promise<void>;
   deleteMessage: (messageId: string) => Promise<void>;
   refreshMessages: () => Promise<void>;
   clearError: () => void;
@@ -65,16 +66,23 @@ export function MessageProvider({ children }: { children: React.ReactNode }) {
       setMessages((prev) => [...prev, data as Message]);
     };
 
+    const handleMessageUpdated = (data: unknown) => {
+      const { message } = data as { message: Message; channelId: string };
+      setMessages((prev) => prev.map((m) => m.id === message.id ? message : m));
+    };
+
     const handleMessageDeleted = (data: unknown) => {
       const { messageId } = data as { messageId: string };
       setMessages((prev) => prev.filter((m) => m.id !== messageId));
     };
 
     socketService.on(SOCKET_EVENTS.NEW_MESSAGE, handleNewMessage);
+    socketService.on(SOCKET_EVENTS.MESSAGE_UPDATED, handleMessageUpdated);
     socketService.on(SOCKET_EVENTS.MESSAGE_DELETED, handleMessageDeleted);
 
     return () => {
       socketService.off(SOCKET_EVENTS.NEW_MESSAGE, handleNewMessage);
+      socketService.off(SOCKET_EVENTS.MESSAGE_UPDATED, handleMessageUpdated);
       socketService.off(SOCKET_EVENTS.MESSAGE_DELETED, handleMessageDeleted);
     };
   }, [selectedChannel?.id]);
@@ -105,6 +113,17 @@ export function MessageProvider({ children }: { children: React.ReactNode }) {
     }
   }, [selectedChannel]);
 
+  const updateMessage = useCallback(async (messageId: string, content: string): Promise<void> => {
+    if (!selectedChannel) throw new Error('Aucun canal sélectionné');
+    try {
+      setError(null);
+      await messageService.update(selectedChannel.id, messageId, { content });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Échec de la modification du message");
+      throw err;
+    }
+  }, [selectedChannel]);
+
   const deleteMessage = useCallback(async (messageId: string): Promise<void> => {
     if (!selectedChannel) throw new Error('Aucun canal sélectionné');
     try {
@@ -121,7 +140,7 @@ export function MessageProvider({ children }: { children: React.ReactNode }) {
   return (
     <MessageContext.Provider value={{
       messages, isLoading, error,
-      sendMessage, deleteMessage,
+      sendMessage, updateMessage, deleteMessage,
       refreshMessages: () => loadMessages(),
       clearError,
     }}>
