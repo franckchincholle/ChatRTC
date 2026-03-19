@@ -164,7 +164,6 @@ export function MessageItem({ message, continued = false }: MessageItemProps) {
         rows={2}
       />
       <div className="message-edit-actions">
-        <span className="message-edit-hint">Entrée pour confirmer · Échap pour annuler</span>
         <button className="message-edit-btn cancel" onClick={() => { setIsEditing(false); setEditContent(message.content); }}>Annuler</button>
         <button className="message-edit-btn confirm" onClick={handleEditSubmit}>Enregistrer</button>
       </div>
