@@ -1,28 +1,35 @@
 name: Electron Build
 
 on:
+  # Linux + Windows : se déclenche automatiquement sur un tag v*
   push:
     tags:
-      - 'v*'   # se déclenche sur git tag v1.0.0 puis git push origin v1.0.0
+      - 'v*'
+  # Mac : se déclenche manuellement depuis l'interface GitHub
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Plateforme Mac à builder'
+        required: true
+        default: 'mac-arm64'
+        type: choice
+        options:
+          - mac-arm64
+          - mac-x64
+          - mac-all
 
 jobs:
-  build:
+  # ─── Build Linux + Windows (sur tag) ────────────────────────────────────────
+  build-linux-windows:
+    if: github.event_name == 'push'
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
-            arch: x64
             name: linux-x64
           - os: windows-latest
-            arch: x64
             name: windows-x64
-          - os: macos-13
-            arch: x64
-            name: mac-x64
-          - os: macos-latest
-            arch: arm64
-            name: mac-arm64
 
     runs-on: ${{ matrix.os }}
     name: Build ${{ matrix.name }}
@@ -48,7 +55,6 @@ jobs:
       - name: Build Electron
         run: npm run electron:build
         env:
-          # Nécessaire pour electron-builder sur Linux
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload artifacts
@@ -59,6 +65,53 @@ jobs:
             frontend/release/*.AppImage
             frontend/release/*.deb
             frontend/release/*.exe
+          retention-days: 7
+
+  # ─── Build Mac (sur demande manuelle) ───────────────────────────────────────
+  build-mac:
+    if: github.event_name == 'workflow_dispatch'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-13
+            name: mac-x64
+            enabled: ${{ github.event.inputs.platform == 'mac-x64' || github.event.inputs.platform == 'mac-all' }}
+          - os: macos-latest
+            name: mac-arm64
+            enabled: ${{ github.event.inputs.platform == 'mac-arm64' || github.event.inputs.platform == 'mac-all' }}
+
+    runs-on: ${{ matrix.os }}
+    name: Build ${{ matrix.name }}
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Electron
+        run: npm run electron:build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.name }}
+          path: |
             frontend/release/*.dmg
             frontend/release/*.zip
           retention-days: 7
