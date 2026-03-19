@@ -6,7 +6,10 @@
     "rootDir": "./electron",
     "strict": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "sourceMap": true
   },
-  "include": ["electron/**/*.ts"]
+  "include": ["electron/**/*.ts"],
+  "exclude": ["node_modules", "dist-electron", ".next"]
 }

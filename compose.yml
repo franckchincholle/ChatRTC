@@ -43,7 +43,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3001
-      CLIENT_URL: http://localhost:3000
+      CLIENT_URL: http://localhost:3000,http://localhost:3005
 
       DATABASE_URL: postgresql://postgres:your_password_change_me@postgres:5432/rtc_chat?schema=public
       DB_HOST: postgres
