@@ -3,13 +3,21 @@ export interface MessageAuthor {
   username: string;
 }
 
+export interface Reaction {
+  messageId: string;
+  userId: string;
+  emoji: string;
+}
+
 export interface Message {
   id: string;
   content: string;
   userId: string;
   channelId: string;
   createdAt: string;
-  author: MessageAuthor;  
+  updatedAt: string;
+  author: MessageAuthor;
+  reactions: Reaction[];  
 }
 
 export interface SendMessageDTO {

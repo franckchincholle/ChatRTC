@@ -40,16 +40,17 @@ export function ServerProvider({ children }: { children: React.ReactNode }) {
     }
   }, [isAuthenticated]);
 
-  // Écoute kick/ban : si l'utilisateur courant est ciblé, le retirer du serveur
   useEffect(() => {
-    const handleKickedOrBanned = ({ userId, serverId }: { userId: string; serverId: string }) => {
+    const handleKickedOrBanned = (data: unknown) => {
+      const { userId, serverId } = data as { userId: string; serverId: string };
       if (userId !== user?.id) return;
       setServers((prev) => prev.filter((s) => s.id !== serverId));
       setSelectedServer((prev) => prev?.id === serverId ? null : prev);
       socketService.leaveServer(serverId);
     };
 
-    const handleUnbanned = ({ userId }: { userId: string; serverId: string }) => {
+    const handleUnbanned = (data: unknown) => {
+      const { userId } = data as { userId: string };
       if (userId !== user?.id) return;
       loadServers();
     };
@@ -71,8 +72,8 @@ export function ServerProvider({ children }: { children: React.ReactNode }) {
       setError(null);
       const data = await serverService.getAll();
       setServers(data);
-    } catch (err: any) {
-      setError(err.message || 'Échec du chargement des serveurs');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Échec du chargement des serveurs");
     } finally {
       setIsLoading(false);
     }
@@ -85,8 +86,8 @@ export function ServerProvider({ children }: { children: React.ReactNode }) {
       const newServer = await serverService.create({ name });
       setServers((prev) => [...prev, newServer]);
       return newServer;
-    } catch (err: any) {
-      setError(err.message || 'Échec de la création du serveur');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Échec de la création du serveur");
       throw err;
     } finally {
       setIsLoading(false);
@@ -101,8 +102,8 @@ export function ServerProvider({ children }: { children: React.ReactNode }) {
       setServers((prev) => prev.map((s) => s.id === id ? updatedServer : s));
       if (selectedServer?.id === id) setSelectedServer(updatedServer);
       return updatedServer;
-    } catch (err: any) {
-      setError(err.message || 'Échec de la mise à jour du serveur');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Échec de la mise à jour du serveur");
       throw err;
     } finally {
       setIsLoading(false);
@@ -116,8 +117,8 @@ export function ServerProvider({ children }: { children: React.ReactNode }) {
       await serverService.delete(id);
       setServers((prev) => prev.filter((s) => s.id !== id));
       if (selectedServer?.id === id) setSelectedServer(null);
-    } catch (err: any) {
-      setError(err.message || 'Échec de la suppression du serveur');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Échec de la suppression du serveur");
       throw err;
     } finally {
       setIsLoading(false);
@@ -131,8 +132,8 @@ export function ServerProvider({ children }: { children: React.ReactNode }) {
       const member = await serverService.join({ inviteCode });
       await loadServers();
       return member;
-    } catch (err: any) {
-      setError(err.message || 'Échec de rejoindre le serveur');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Échec, vous n'avez pas pu rejoindre le serveur");
       throw err;
     } finally {
       setIsLoading(false);
@@ -146,8 +147,8 @@ export function ServerProvider({ children }: { children: React.ReactNode }) {
       await serverService.leave(id);
       setServers((prev) => prev.filter((s) => s.id !== id));
       if (selectedServer?.id === id) setSelectedServer(null);
-    } catch (err: any) {
-      setError(err.message || 'Échec de quitter le serveur');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Échec, vous n'avez pas pu quitter le serveur");
       throw err;
     } finally {
       setIsLoading(false);
@@ -160,8 +161,8 @@ export function ServerProvider({ children }: { children: React.ReactNode }) {
       setError(null);
       const response = await serverService.generateInviteCode(id);
       return response.code;
-    } catch (err: any) {
-      setError(err.message || "Échec de la génération du code d'invitation");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Échec de la génération du code d'invitation");
       throw err;
     } finally {
       setIsLoading(false);
@@ -178,19 +179,10 @@ export function ServerProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <ServerContext.Provider value={{
-      servers,
-      selectedServer,
-      isLoading,
-      error,
-      createServer,
-      updateServer,
-      deleteServer,
-      joinServer,
-      leaveServer,
-      generateInviteCode,
-      selectServer,
-      refreshServers: loadServers,
-      clearError,
+      servers, selectedServer, isLoading, error,
+      createServer, updateServer, deleteServer,
+      joinServer, leaveServer, generateInviteCode,
+      selectServer, refreshServers: loadServers, clearError,
     }}>
       {children}
     </ServerContext.Provider>

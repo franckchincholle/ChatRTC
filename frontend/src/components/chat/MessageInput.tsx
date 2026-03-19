@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { validateMessage } from '@/utils/validators';
 import { GiphyFetch } from '@giphy/js-fetch-api';
 import { Grid } from '@giphy/react-components';
+import type { IGif } from '@giphy/js-types';
 
 const gf = new GiphyFetch('UP4mVIQARjHZh1NF8w62C5xxpCV4DymY');
 
@@ -57,14 +58,18 @@ export function MessageInput() {
       await sendMessage(content);
       setContent('');
       stopTyping();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setContent(e.target.value);
-    e.target.value.trim() ? startTyping() : stopTyping();
+    if (e.target.value.trim()) {
+        startTyping();
+      } else {
+        stopTyping();
+      }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -74,14 +79,14 @@ export function MessageInput() {
     }
   };
 
-  const handleGifSelect = async (gif: any, e: React.SyntheticEvent) => {
+  const handleGifSelect = async (gif: IGif, e: React.SyntheticEvent) => {
     e.preventDefault();
     try {
       await sendMessage(gif.images.original.url);
       setShowGifPicker(false);
       setSearchTerm('');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
     }
   };
 

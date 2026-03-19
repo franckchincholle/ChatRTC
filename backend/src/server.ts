@@ -12,6 +12,7 @@ import { SocketManager } from './sockets/socket.manager';
 import authRoutes from './routes/auth.routes';
 import channelRoutes from './routes/channel.routes';
 import messageRoutes from './routes/message.routes';
+import reactionRoutes from './routes/reaction.routes';
 import memberRoutes from './routes/member.routes';
 
 const app = express();
@@ -50,6 +51,7 @@ app.use('/auth', authRoutes);
 app.use('/api/servers', serverRoutes);
 app.use('/', channelRoutes);
 app.use('/channels/:channelId/messages', messageRoutes);
+app.use('/channels/:channelId/messages/:messageId/reactions', reactionRoutes); 
 app.use('/', memberRoutes);
 
 app.use((req: Request, res: Response) => {
