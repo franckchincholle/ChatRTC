@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  //output: process.env.BUILD_TARGET === 'docker' ? 'standalone' : undefined,
-}
+  output: "standalone",
+};
 
 module.exports = nextConfig;
