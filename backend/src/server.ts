@@ -21,22 +21,31 @@ const httpServer = createServer(app);
 
 app.use(helmet());
 
-app.use(cors({
-  origin: env.CLIENT_URL,
-  credentials: true, // Permet l'envoi de cookies
-}));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      const allowedOrigins = env.CLIENT_URL.split(',').map((o) => o.trim());
+      // Pas d'origine (ex: curl, mobile) ou origine autorisée → OK
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, origin || allowedOrigins[0]); // ← renvoie l'origine exacte, pas toute la liste
+      } else {
+        callback(new Error(`CORS bloqué pour l'origine : ${origin}`));
+      }
+    },
+    credentials: true,
+  })
+);
 
 app.use(express.json()); // Parse application/json
 app.use(express.urlencoded({ extended: true })); // Parse application/x-www-form-urlencoded
 
 app.get('/health', (req: Request, res: Response) => {
-  res.json({ 
-    status: 'ok', 
+  res.json({
+    status: 'ok',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
   });
 });
-
 
 app.use('/auth', authRoutes);
 app.use('/api/servers', serverRoutes);
@@ -44,7 +53,6 @@ app.use('/', channelRoutes);
 app.use('/channels/:channelId/messages', messageRoutes);
 app.use('/channels/:channelId/messages/:messageId/reactions', reactionRoutes); 
 app.use('/', memberRoutes);
-
 
 app.use((req: Request, res: Response) => {
   res.status(404).json({
@@ -84,18 +92,18 @@ async function startServer() {
 
 process.on('SIGINT', async () => {
   console.log('\n⚠️  Signal SIGINT reçu, arrêt du serveur...');
-  
+
   try {
     await prisma.$disconnect();
     console.log('✅ Prisma déconnecté');
-    
+
     await redis.quit();
     console.log('✅ Redis déconnecté');
-    
+
     console.log('👋 Serveur arrêté proprement\n');
     process.exit(0);
   } catch (error) {
-    console.error('❌ Erreur lors de l\'arrêt:', error);
+    console.error("❌ Erreur lors de l'arrêt:", error);
     process.exit(1);
   }
 });
