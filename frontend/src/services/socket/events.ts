@@ -14,6 +14,10 @@ export const SOCKET_EVENTS = {
   MESSAGE_UPDATED: 'message:updated',
   MESSAGE_DELETED: 'message:deleted',
 
+  // Serveur → Client — Réactions
+  REACTION_ADDED:   'reaction:added',
+  REACTION_REMOVED: 'reaction:removed',
+  
   // Serveur → Client — Channels
   CHANNEL_CREATED: 'channel:created',
   CHANNEL_UPDATED: 'channel:updated',

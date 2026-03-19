@@ -9,6 +9,10 @@ const messageInclude = {
   author: {
     select: { id: true, username: true },
   },
+  reactions: {
+    select: { messageId: true, userId: true, emoji: true },
+    orderBy: { createdAt: 'asc' as const },
+  },
 } satisfies Prisma.MessageInclude;
 
 export class MessageRepository {
