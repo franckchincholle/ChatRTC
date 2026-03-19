@@ -9,6 +9,10 @@ const messageInclude = {
   author: {
     select: { id: true, username: true },
   },
+  reactions: {
+    select: { messageId: true, userId: true, emoji: true },
+    orderBy: { createdAt: 'asc' as const },
+  },
 } satisfies Prisma.MessageInclude;
 
 export class MessageRepository {
@@ -27,7 +31,7 @@ export class MessageRepository {
     return prisma.message.findMany({
       where: { channelId },
       take: limit,
-      orderBy: { createdAt: 'asc' }, 
+      orderBy: { createdAt: 'asc' },
       include: messageInclude,
     });
   }
@@ -35,6 +39,14 @@ export class MessageRepository {
   async findById(id: string): Promise<MessageWithAuthor | null> {
     return prisma.message.findUnique({
       where: { id },
+      include: messageInclude,
+    });
+  }
+
+  async update(id: string, content: string): Promise<MessageWithAuthor> {
+    return prisma.message.update({
+      where: { id },
+      data: { content, updatedAt: new Date() },
       include: messageInclude,
     });
   }

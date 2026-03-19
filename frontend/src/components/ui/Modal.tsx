@@ -31,14 +31,31 @@ export function Modal({ isOpen, onClose, title, children, footer }: ModalProps) 
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="modal"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
+      >
+        {/* Header */}
         <div className="modal-header">
-          <h2 className="modal-title">{title}</h2>
-          <button className="modal-close" onClick={onClose}>
+          <h2 className="modal-title" id="modal-title">
+            {title}
+          </h2>
+          <button
+            className="modal-close"
+            onClick={onClose}
+            aria-label="Fermer"
+          >
             ×
           </button>
         </div>
+
+        {/* Body */}
         <div className="modal-body">{children}</div>
+
+        {/* Footer (optionnel) */}
         {footer && <div className="modal-footer">{footer}</div>}
       </div>
     </div>

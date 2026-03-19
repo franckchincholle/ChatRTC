@@ -1,5 +1,5 @@
 import { prisma } from '../config/database';
-import { Server, ServerMember, CreateServerDTO, UpdateServerDTO } from '../types/server.types';
+import { Server, CreateServerDTO, UpdateServerDTO } from '../types/server.types';
 
 export class ServerRepository {
   async create(data: CreateServerDTO, ownerId: string): Promise<Server> {
@@ -76,6 +76,12 @@ export class ServerRepository {
         expiresAt,
       }
     })
+  }
+
+  async deleteInvitation(code: string) {
+    return await prisma.invitation.delete({
+      where: { code }
+    });
   }
 
   async transferOwnership(serverId: string, oldOwnerId: string, newOwnerId: string): Promise<void> {

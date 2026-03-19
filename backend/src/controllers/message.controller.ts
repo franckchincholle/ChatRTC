@@ -7,17 +7,17 @@ export class MessageController {
   async sendMessage(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user.id;
-      const { channelId } = req.params as { channelId: string };  // ✅ channelId depuis l'URL
+      const { channelId } = req.params as { channelId: string };
       const { content } = req.body;
 
       const message = await messageService.sendMessage(userId, channelId, content);
 
-    const io = SocketManager.getIO();
-    const room = `channel:${channelId}`;
-    const socketsInRoom = await io.in(room).fetchSockets();
-    socketsInRoom.forEach(s => console.log(`  - Socket: ${s.id}`));
+      const io   = SocketManager.getIO();
+      const room = `channel:${channelId}`;
+      const socketsInRoom = await io.in(room).fetchSockets();
+      socketsInRoom.forEach((s) => console.log(`  - Socket: ${s.id}`));
 
-    io.to(room).emit('message:received', message);
+      io.to(room).emit('message:received', message);
 
       res.status(201).json({ success: true, data: message });
     } catch (error) {
@@ -28,7 +28,7 @@ export class MessageController {
   async getMessages(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user.id;
-      const { channelId } = req.params as { channelId: string };  // ✅ channelId depuis l'URL
+      const { channelId } = req.params as { channelId: string };
 
       const messages = await messageService.getChannelMessages(userId, channelId);
 
@@ -38,13 +38,28 @@ export class MessageController {
     }
   }
 
+  async updateMessage(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = req.user.id;
+      const { channelId, messageId } = req.params as { channelId: string; messageId: string };
+      const { content } = req.body;
+
+      const message = await messageService.updateMessage(userId, messageId, content);
+
+      SocketManager.getIO()
+        .to(`channel:${channelId}`)
+        .emit('message:updated', { message, channelId });
+
+      res.json({ success: true, data: message });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async deleteMessage(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user.id;
-      const { channelId, messageId } = req.params as { 
-        messageId: string,
-        channelId: string 
-      };
+      const { channelId, messageId } = req.params as { channelId: string; messageId: string };
 
       await messageService.deleteMessage(userId, messageId);
 

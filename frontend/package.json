@@ -2,11 +2,15 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
+  "main": "dist-electron/main.js",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint .",
+    "electron:compile": "tsc -p tsconfig.electron.json",
+    "electron:dev": "concurrently \"next dev -p 3005\" \"npm run electron:compile && wait-on http://localhost:3005 && electron .\"",
+    "electron:build": "next build && npm run electron:compile && electron-builder"
   },
   "dependencies": {
     "@giphy/js-fetch-api": "^5.7.0",
@@ -20,8 +24,46 @@
     "@types/node": "^20.0.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
-    "eslint": "^8.0.0",
-    "eslint-config-next": "^14.0.0",
-    "typescript": "^5.0.0"
+    "concurrently": "^9.2.1",
+    "electron": "^41.0.3",
+    "electron-builder": "^26.8.1",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^15.5.13",
+    "typescript": "^5.0.0",
+    "wait-on": "^9.0.4"
+  },
+  "build": {
+    "appId": "com.chatrtc.desktop",
+    "productName": "ChatRTC",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist-electron/**/*",
+      ".next/**/*",
+      "public/**/*",
+      "package.json",
+      "node_modules/**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.social-networking",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Network"
+    }
   }
 }

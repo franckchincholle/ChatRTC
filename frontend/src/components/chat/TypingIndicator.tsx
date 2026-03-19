@@ -14,8 +14,16 @@ export function TypingIndicator({ serverId, channelId }: TypingIndicatorProps) {
   const { getTypingText } = useTyping(serverId, channelId, user?.id);
 
   const text = getTypingText();
-
   if (!text) return null;
 
-  return <div className="typing-indicator">{text}</div>;
+  return (
+    <div className="typing-indicator">
+      <div className="typing-dots" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </div>
+      <span>{text}</span>
+    </div>
+  );
 }

@@ -9,7 +9,7 @@ export interface TypingUser {
 
 export interface SocketMessage {
   event: string;
-  data: any;
+  data: unknown;
 }
 
 export interface NewMessageEvent {

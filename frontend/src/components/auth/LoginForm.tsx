@@ -4,14 +4,12 @@ import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { validateEmail, validatePassword } from '@/utils/validators';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
 
 export function LoginForm() {
-  const [email, setEmail] = useState('');
+  const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
-  
+  const [errors, setErrors]     = useState<{ email?: string; password?: string }>({});
+
   const { login, isLoading, error } = useAuth();
   const router = useRouter();
 
@@ -19,53 +17,72 @@ export function LoginForm() {
     e.preventDefault();
     setErrors({});
 
-    const emailValidation = validateEmail(email);
-    const passwordValidation = validatePassword(password);
+    const emailV    = validateEmail(email);
+    const passwordV = validatePassword(password);
 
-    if (!emailValidation.isValid || !passwordValidation.isValid) {
-      setErrors({
-        email: emailValidation.error,
-        password: passwordValidation.error,
-      });
+    if (!emailV.isValid || !passwordV.isValid) {
+      setErrors({ email: emailV.error, password: passwordV.error });
       return;
     }
 
     try {
       await login({ email, password });
       router.push('/chat');
-    } catch (err) {
-    }
+    } catch {}
   };
 
   return (
     <form onSubmit={handleSubmit} className="auth-form">
-      <div>
-        <Input
+      <div className="auth-title">Connexion</div>
+
+      {/* Email */}
+      <div className="auth-field">
+        <label className="auth-field-label" htmlFor="login-email">Email</label>
+        <input
+          id="login-email"
           type="email"
-          placeholder="Email"
+          className={`auth-input${errors.email ? ' input-error' : ''}`}
+          placeholder="toi@exemple.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           disabled={isLoading}
+          autoComplete="email"
+          autoFocus
         />
-        {errors.email && <span className="auth-error">{errors.email}</span>}
+        {errors.email && <span className="input-error-message">{errors.email}</span>}
       </div>
 
-      <div>
-        <Input
+      {/* Mot de passe */}
+      <div className="auth-field">
+        <label className="auth-field-label" htmlFor="login-password">Mot de passe</label>
+        <input
+          id="login-password"
           type="password"
-          placeholder="Mot de passe"
+          className={`auth-input${errors.password ? ' input-error' : ''}`}
+          placeholder="••••••••"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           disabled={isLoading}
+          autoComplete="current-password"
         />
-        {errors.password && <span className="auth-error">{errors.password}</span>}
+        {errors.password && <span className="input-error-message">{errors.password}</span>}
       </div>
 
-      {error && <div className="auth-error">{error}</div>}
+      {/* Erreur serveur */}
+      {error && (
+        <div className="auth-error" role="alert">{error}</div>
+      )}
 
-      <Button type="submit" disabled={isLoading}>
-        {isLoading ? 'Connexion...' : 'Se connecter'}
-      </Button>
+      <button
+        type="submit"
+        className="auth-submit"
+        disabled={isLoading}
+      >
+        {isLoading
+          ? <><span className="spinner spinner-xs" /> Connexion…</>
+          : 'Se connecter'
+        }
+      </button>
     </form>
   );
 }

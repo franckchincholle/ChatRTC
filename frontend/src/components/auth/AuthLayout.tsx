@@ -10,7 +10,11 @@ export function AuthLayout({ children }: AuthLayoutProps) {
   return (
     <div className="auth-container">
       <div className="auth-box">
-        <h1 className="auth-title">RTC - Real Time Chat</h1>
+        {/* Logo */}
+        <div className="auth-logo">
+          <div className="auth-logo-mark">R</div>
+          <span className="auth-logo-name">RTC</span>
+        </div>
         {children}
       </div>
     </div>

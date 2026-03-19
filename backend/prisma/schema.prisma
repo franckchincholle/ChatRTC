@@ -19,7 +19,10 @@ model User {
   // Relations
   ownedServers      Server[]        @relation("OwnedServers")      
   serverMemberships ServerMember[]  @relation("UserMemberships")   
-  messages          Message[]       @relation("UserMessages")      
+  messages          Message[]       @relation("UserMessages")
+  bansGiven         ServerBan[]     @relation("BansGiven")
+  bansReceived      ServerBan[]     @relation("BansReceived")
+  reactions         Reaction[]      @relation("UserReactions")
 }
 
 model Server {
@@ -33,7 +36,8 @@ model Server {
   owner       User           @relation("OwnedServers", fields: [ownerId], references: [id])
   channels    Channel[]      @relation("OwnedChannels")       
   members     ServerMember[] @relation("ServerMemberships")   
-  invitations Invitation[]   @relation("ServerInvitations")   
+  invitations Invitation[]   @relation("ServerInvitations")
+  bans        ServerBan[]    @relation("ServerBans")   
 }
 
 model Channel {
@@ -47,27 +51,42 @@ model Channel {
   server   Server    @relation("OwnedChannels", fields: [serverId], references: [id], onDelete: Cascade)
   messages Message[] @relation("ChannelMessages")  
 
-  // Contrainte 
   @@unique([serverId, name])
 }
 
 model Message {
   id        String   @id @default(uuid())
   content   String
-  channelId String   // Dans quel channel ?
-  userId    String   // Qui a écrit ce message ?
+  channelId String
+  userId    String
   createdAt DateTime @default(now()) 
   updatedAt DateTime @updatedAt
 
   // Relations
-  author  User    @relation("UserMessages", fields: [userId], references: [id], onDelete: Cascade)
-  channel Channel @relation("ChannelMessages", fields: [channelId], references: [id], onDelete: Cascade)
+  author    User       @relation("UserMessages", fields: [userId], references: [id], onDelete: Cascade)
+  channel   Channel    @relation("ChannelMessages", fields: [channelId], references: [id], onDelete: Cascade)
+  reactions Reaction[] @relation("MessageReactions")
+}
+
+model Reaction {
+  id        String   @id @default(uuid())
+  emoji     String
+  messageId String
+  userId    String
+  createdAt DateTime @default(now())
+
+  // Relations
+  message Message @relation("MessageReactions", fields: [messageId], references: [id], onDelete: Cascade)
+  user    User    @relation("UserReactions",    fields: [userId],    references: [id], onDelete: Cascade)
+
+  // Un seul emoji par utilisateur par message
+  @@unique([messageId, userId])
 }
 
 model ServerMember {
   id        String   @id @default(uuid())
-  userId    String   // Quel user ?
-  serverId  String   // Dans quel server ?
+  userId    String
+  serverId  String
   role      String   // "OWNER" | "ADMIN" | "MEMBER"
   joinedAt  DateTime @default(now())
 
@@ -75,7 +94,6 @@ model ServerMember {
   user   User   @relation("UserMemberships", fields: [userId], references: [id], onDelete: Cascade)
   server Server @relation("ServerMemberships", fields: [serverId], references: [id], onDelete: Cascade)
 
-  // Contrainte 
   @@unique([userId, serverId])
 }
 
@@ -88,4 +106,20 @@ model Invitation {
 
   // Relations
   server Server @relation("ServerInvitations", fields: [serverId], references: [id], onDelete: Cascade)
+}
+
+model ServerBan {
+  id          String    @id @default(uuid())
+  userId      String
+  serverId    String
+  bannedById  String
+  bannedAt    DateTime  @default(now())
+  bannedUntil DateTime?
+
+  // Relations
+  user     User   @relation("BansReceived", fields: [userId],    references: [id], onDelete: Cascade)
+  server   Server @relation("ServerBans",   fields: [serverId],  references: [id], onDelete: Cascade)
+  bannedBy User   @relation("BansGiven",    fields: [bannedById], references: [id], onDelete: Cascade)
+
+  @@unique([userId, serverId])
 }

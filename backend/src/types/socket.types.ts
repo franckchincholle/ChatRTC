@@ -1,30 +1,31 @@
 import { Server as SocketIOServer, Socket as SocketIOSocket } from 'socket.io';
 import { ChannelResponse } from './channel.types';
+import { MessageWithAuthor } from '../repositories/message.repository';
 
-// EVENTS : Client → Serveur
 export interface ListenEvents {
-  'join_server': (data: { serverId: string }) => void;   // ← Ajoute
+  'join_server': (data: { serverId: string }) => void;
   'leave_server': (data: { serverId: string }) => void;
-  // Channels
   'join_channel': (data: { serverId: string; channelId: string }) => void;
   'leave_channel': (data: { serverId: string; channelId: string }) => void;
-  // Typing
   'user:typing': (data: { channelId: string; serverId: string }) => void;
   'user:stop_typing': (data: { channelId: string; serverId: string }) => void;
 }
 
-// EVENTS : Serveur → Client
 export interface EmitEvents {
   // Messages
-  'message:received': (message: any) => void;
-  'message:deleted': (data: { messageId: string; channelId: string }) => void;
+  'message:received': (message: MessageWithAuthor) => void;
+  'message:updated':  (data: { message: MessageWithAuthor; channelId: string }) => void;
+  'message:deleted':  (data: { messageId: string; channelId: string }) => void;
+
+  // Reactions
+  'reaction:added':   (data: { messageId: string; userId: string; emoji: string; channelId: string }) => void;
+  'reaction:removed': (data: { messageId: string; userId: string; emoji: string; channelId: string }) => void;
 
   // Members
-  'member:role_updated': (data: {                           
-    userId: string; 
-    serverId: string; 
-    role: 'OWNER' | 'ADMIN' | 'MEMBER' 
-  }) => void;
+  'member:role_updated': (data: { userId: string; serverId: string; role: 'OWNER' | 'ADMIN' | 'MEMBER' }) => void;
+  'member:kicked': (data: { userId: string; serverId: string }) => void;
+  'member:banned': (data: { userId: string; serverId: string }) => void;
+  'member:unbanned': (data: { userId: string; serverId: string }) => void;
 
   // Channels
   'channel:created': (channel: ChannelResponse) => void;
@@ -40,16 +41,8 @@ export interface EmitEvents {
   'server:member_left': (data: { userId: string; serverId: string }) => void;
 
   // Users
-  'user:typing': (data: {
-    serverId: string;
-    channelId: string;
-    user: { userId: string; username: string };
-  }) => void;
-  'user:stop_typing': (data: {
-    serverId: string;
-    channelId: string;
-    user: { userId: string; username: string };
-  }) => void;
+  'user:typing': (data: { serverId: string; channelId: string; user: { userId: string; username: string } }) => void;
+  'user:stop_typing': (data: { serverId: string; channelId: string; user: { userId: string; username: string } }) => void;
   'user:status_changed': (data: { userId: string; status: 'online' | 'offline' }) => void;
 }
 

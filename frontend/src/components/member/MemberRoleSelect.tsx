@@ -3,7 +3,6 @@
 import React from 'react';
 import { MemberRole } from '@/types/member.types';
 import { useMembers } from '@/hooks/useMembers';
-import { useServers } from '@/hooks/useServer';
 
 interface MemberRoleSelectProps {
   memberId: string;
@@ -11,26 +10,23 @@ interface MemberRoleSelectProps {
 }
 
 export function MemberRoleSelect({ memberId, currentRole }: MemberRoleSelectProps) {
-  const { selectedServer } = useServers();
   const { updateMemberRole } = useMembers();
 
   const handleChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newRole = e.target.value as MemberRole;
-    try {
-      await updateMemberRole(memberId, newRole);
-    } catch (err) {
-      console.error('Failed to update member role:', err);
-    }
+    try { await updateMemberRole(memberId, newRole); }
+    catch (err) { console.error('Failed to update member role:', err); }
   };
 
   return (
-    <select 
-      className="role-select" 
-      value={currentRole} 
+    <select
+      className="role-select"
+      value={currentRole}
       onChange={handleChange}
+      aria-label="Changer le rôle"
     >
-      <option value="member">Member</option>
-      <option value="admin">Admin</option>
+      <option value="MEMBER">Membre</option>
+      <option value="ADMIN">Admin</option>
     </select>
   );
 }

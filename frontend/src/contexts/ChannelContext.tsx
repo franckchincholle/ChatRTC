@@ -44,30 +44,28 @@ export function ChannelProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!selectedServer) return;
 
-    const handleChannelCreated = (channel: Channel) => {
+    const handleChannelCreated = (data: unknown) => {
+      const channel = data as Channel;
       console.log('🆕 Channel créé via Socket:', channel.name);
       if (channel.serverId === selectedServer.id) {
         setChannels((prev) => {
-          const exists = prev.find((c) => c.id === channel.id);
-          if (exists) return prev;
+          if (prev.find((c) => c.id === channel.id)) return prev;
           return [...prev, channel];
         });
       }
     };
 
-    const handleChannelUpdated = (channel: Channel) => {
+    const handleChannelUpdated = (data: unknown) => {
+      const channel = data as Channel;
       console.log('✏️ Channel mis à jour via Socket:', channel.name);
       if (channel.serverId === selectedServer.id) {
-        setChannels((prev) =>
-          prev.map((c) => (c.id === channel.id ? channel : c))
-        );
-        setSelectedChannel((prev) =>
-          prev?.id === channel.id ? channel : prev
-        );
+        setChannels((prev) => prev.map((c) => c.id === channel.id ? channel : c));
+        setSelectedChannel((prev) => prev?.id === channel.id ? channel : prev);
       }
     };
 
-    const handleChannelDeleted = ({ channelId, serverId }: { channelId: string; serverId: string }) => {
+    const handleChannelDeleted = (data: unknown) => {
+      const { channelId, serverId } = data as { channelId: string; serverId: string };
       console.log('🗑️ Channel supprimé via Socket:', channelId);
       if (serverId === selectedServer.id) {
         setChannels((prev) => prev.filter((c) => c.id !== channelId));
@@ -95,7 +93,6 @@ export function ChannelProvider({ children }: { children: React.ReactNode }) {
   const loadChannels = useCallback(async (serverId?: string): Promise<void> => {
     const id = serverId ?? selectedServer?.id;
     if (!id) return;
-
     try {
       setIsLoading(true);
       setError(null);
@@ -105,12 +102,10 @@ export function ChannelProvider({ children }: { children: React.ReactNode }) {
       const savedChannelId = localStorage.getItem(SELECTED_CHANNEL_KEY);
       if (savedChannelId) {
         const savedChannel = data.find((c) => c.id === savedChannelId);
-        if (savedChannel) {
-          setSelectedChannel(savedChannel);
-        }
+        if (savedChannel) setSelectedChannel(savedChannel);
       }
-    } catch (err: any) {
-      setError(err.message || 'Échec du chargement des canaux');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Échec du chargement des canaux");
     } finally {
       setIsLoading(false);
     }
@@ -122,16 +117,13 @@ export function ChannelProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(true);
       setError(null);
       const newChannel = await channelService.create(selectedServer.id, { name });
-      
       setChannels((prev) => {
-        const exists = prev.find((c) => c.id === newChannel.id);
-        if (exists) return prev;
+        if (prev.find((c) => c.id === newChannel.id)) return prev;
         return [...prev, newChannel];
       });
-      
       return newChannel;
-    } catch (err: any) {
-      setError(err.message || 'Échec de la création du canal');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Échec de la création du canal");
       throw err;
     } finally {
       setIsLoading(false);
@@ -142,10 +134,9 @@ export function ChannelProvider({ children }: { children: React.ReactNode }) {
     try {
       setIsLoading(true);
       setError(null);
-      const updatedChannel = await channelService.update(id, { name });
-      return updatedChannel;
-    } catch (err: any) {
-      setError(err.message || 'Échec de la mise à jour du canal');
+      return await channelService.update(id, { name });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Échec de la mise à jour du canal");
       throw err;
     } finally {
       setIsLoading(false);
@@ -157,8 +148,8 @@ export function ChannelProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(true);
       setError(null);
       await channelService.delete(id);
-    } catch (err: any) {
-      setError(err.message || 'Échec de la suppression du canal');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Échec de la suppression du canal");
       throw err;
     } finally {
       setIsLoading(false);

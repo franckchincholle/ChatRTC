@@ -1,10 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Server } from '@/types/server.types';
 import { useServers } from '@/hooks/useServer';
 import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui/Button';
+import { EditServerModal } from './EditServerModal';
 
 interface ServerItemProps {
   server: Server;
@@ -12,51 +12,75 @@ interface ServerItemProps {
   onSelect: () => void;
 }
 
-export function ServerItem({ server, isSelected, onSelect }: ServerItemProps) {
-  const { user } = useAuth();
-  const { deleteServer, leaveServer } = useServers();
-  
-  const isOwner = server.ownerId === user?.id;
+function getInitials(name: string) {
+  const words = name.trim().split(/\s+/);
+  if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase();
+  return name.slice(0, 2).toUpperCase();
+}
 
-  const handleDelete = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (confirm('Êtes-vous sûr de vouloir supprimer ce serveur ?')) {
-      try {
-        await deleteServer(server.id);
-      } catch (err) {
-        console.error('Failed to delete server:', err);
-      }
-    }
-  };
+export function ServerItem({ server, isSelected, onSelect }: ServerItemProps) {
+  const { user }                = useAuth();
+  const { leaveServer }         = useServers();
+  const [showEdit, setShowEdit] = useState(false);
+
+  const isOwner = server.ownerId === user?.id;
 
   const handleLeave = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (confirm('Êtes-vous sûr de vouloir quitter ce serveur ?')) {
-      try {
-        await leaveServer(server.id);
-      } catch (err) {
-        console.error('Failed to leave server:', err);
-      }
+    if (confirm(`Quitter « ${server.name} » ?`)) {
+      try { await leaveServer(server.id); }
+      catch (err) { console.error(err); }
     }
   };
 
   return (
-    <div 
-      className={`server-item ${isSelected ? 'active' : ''}`}
-      onClick={onSelect}
-    >
-      <div className="server-item-name">{server.name}</div>
-      <div className="server-item-actions">
-        {isOwner ? (
-          <Button variant="icon" onClick={handleDelete}>
-            🗑️
-          </Button>
-        ) : (
-          <Button variant="icon" onClick={handleLeave}>
-            👋
-          </Button>
-        )}
+    <>
+      <div className="server-item-wrapper">
+        {/* Icône principale */}
+        <div
+          className={`server-item${isSelected ? ' active' : ''}`}
+          onClick={onSelect}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === 'Enter' && onSelect()}
+          aria-label={`Serveur ${server.name}${isSelected ? ' (actif)' : ''}`}
+        >
+          {getInitials(server.name)}
+
+          {/* Bouton d'action visible au hover */}
+          {isSelected && (isOwner ? (
+            <button
+              className="server-item-action"
+              onClick={(e) => { e.stopPropagation(); setShowEdit(true); }}
+              title="Modifier le serveur"
+              aria-label={`Modifier ${server.name}`}
+            >
+              ✎
+            </button>
+          ) : (
+            <button
+              className="server-item-action leave"
+              onClick={handleLeave}
+              title="Quitter le serveur"
+              aria-label={`Quitter ${server.name}`}
+            >
+              ✕
+            </button>
+          ))}
+        </div>
+
+        {/* Tooltip */}
+        <div className="server-item-tooltip">{server.name}</div>
       </div>
-    </div>
+
+      {/* Modale d'édition (owner uniquement) */}
+      {isOwner && (
+        <EditServerModal
+          isOpen={showEdit}
+          onClose={() => setShowEdit(false)}
+          server={server}
+        />
+      )}
+    </>
   );
 }
