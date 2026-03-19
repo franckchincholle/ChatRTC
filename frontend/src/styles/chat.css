@@ -1927,3 +1927,86 @@
   font-style: italic;
   margin-left: 6px;
 }
+
+/* ═══════════════════════════════════════════
+   REACTIONS
+   ═══════════════════════════════════════════ */
+ 
+/* ── Bulle de sélection d'emoji ── */
+.reaction-picker {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 60px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border-bright);
+  border-radius: 24px;
+  padding: 6px 10px;
+  display: flex;
+  gap: 4px;
+  box-shadow: var(--shadow-lg);
+  z-index: 300;
+  animation: ctxIn var(--transition-normal) cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+ 
+.message,
+.message-continued {
+  position: relative;
+}
+ 
+.reaction-picker-btn {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  transition: transform var(--transition-fast), background var(--transition-fast);
+  line-height: 1;
+}
+ 
+.reaction-picker-btn:hover {
+  transform: scale(1.3);
+  background: var(--bg-hover);
+}
+ 
+/* ── Réactions affichées sous le message ── */
+.message-reactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+ 
+.reaction-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+ 
+.reaction-badge:hover {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+ 
+.reaction-badge.mine {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+ 
+.reaction-count {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  font-weight: 700;
+}
+ 
+.reaction-badge.mine .reaction-count {
+  color: var(--accent);
+}

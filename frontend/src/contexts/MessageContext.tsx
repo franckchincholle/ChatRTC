@@ -1,8 +1,9 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { Message } from '@/types/message.types';
+import { Message, Reaction } from '@/types/message.types';
 import { messageService } from '@/services/api/message.service';
+import { reactionService } from '@/services/api/reaction.service';
 import { socketService } from '@/services/socket/socket.service';
 import { SOCKET_EVENTS } from '@/services/socket/events';
 import { useChannelsContext } from '@/contexts/ChannelContext';
@@ -15,6 +16,7 @@ interface MessageContextType {
   sendMessage: (content: string) => Promise<void>;
   updateMessage: (messageId: string, content: string) => Promise<void>;
   deleteMessage: (messageId: string) => Promise<void>;
+  toggleReaction: (messageId: string, emoji: string) => Promise<void>;
   refreshMessages: () => Promise<void>;
   clearError: () => void;
 }
@@ -63,12 +65,13 @@ export function MessageProvider({ children }: { children: React.ReactNode }) {
     if (!selectedChannel) return;
 
     const handleNewMessage = (data: unknown) => {
-      setMessages((prev) => [...prev, data as Message]);
+      const message = data as Message;
+      setMessages((prev) => [...prev, { ...message, reactions: message.reactions ?? [] }]);
     };
 
     const handleMessageUpdated = (data: unknown) => {
       const { message } = data as { message: Message; channelId: string };
-      setMessages((prev) => prev.map((m) => m.id === message.id ? message : m));
+      setMessages((prev) => prev.map((m) => m.id === message.id ? { ...message, reactions: m.reactions } : m));
     };
 
     const handleMessageDeleted = (data: unknown) => {
@@ -76,14 +79,35 @@ export function MessageProvider({ children }: { children: React.ReactNode }) {
       setMessages((prev) => prev.filter((m) => m.id !== messageId));
     };
 
+    const handleReactionAdded = (data: unknown) => {
+      const reaction = data as Reaction & { channelId: string };
+      setMessages((prev) => prev.map((m) => {
+        if (m.id !== reaction.messageId) return m;
+        const others = m.reactions.filter((r) => r.userId !== reaction.userId);
+        return { ...m, reactions: [...others, { messageId: reaction.messageId, userId: reaction.userId, emoji: reaction.emoji }] };
+      }));
+    };
+ 
+    const handleReactionRemoved = (data: unknown) => {
+      const reaction = data as Reaction & { channelId: string };
+      setMessages((prev) => prev.map((m) => {
+        if (m.id !== reaction.messageId) return m;
+        return { ...m, reactions: m.reactions.filter((r) => r.userId !== reaction.userId) };
+      }));
+    };
+
     socketService.on(SOCKET_EVENTS.NEW_MESSAGE, handleNewMessage);
     socketService.on(SOCKET_EVENTS.MESSAGE_UPDATED, handleMessageUpdated);
     socketService.on(SOCKET_EVENTS.MESSAGE_DELETED, handleMessageDeleted);
+    socketService.on(SOCKET_EVENTS.REACTION_ADDED,  handleReactionAdded);
+    socketService.on(SOCKET_EVENTS.REACTION_REMOVED, handleReactionRemoved);
 
     return () => {
       socketService.off(SOCKET_EVENTS.NEW_MESSAGE, handleNewMessage);
       socketService.off(SOCKET_EVENTS.MESSAGE_UPDATED, handleMessageUpdated);
       socketService.off(SOCKET_EVENTS.MESSAGE_DELETED, handleMessageDeleted);
+      socketService.off(SOCKET_EVENTS.REACTION_ADDED,  handleReactionAdded);
+      socketService.off(SOCKET_EVENTS.REACTION_REMOVED, handleReactionRemoved);
     };
   }, [selectedChannel?.id]);
 
@@ -94,7 +118,7 @@ export function MessageProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(true);
       setError(null);
       const data = await messageService.getByChannelId(id);
-      setMessages(data);
+      setMessages(data.map((m) => ({ ...m, reactions: m.reactions ?? [] })));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Échec du chargement des messages");
     } finally {
@@ -135,12 +159,23 @@ export function MessageProvider({ children }: { children: React.ReactNode }) {
     }
   }, [selectedChannel]);
 
+  const toggleReaction = useCallback(async (messageId: string, emoji: string): Promise<void> => {
+    if (!selectedChannel) throw new Error('Aucun canal sélectionné');
+    try {
+      setError(null);
+      await reactionService.toggle(selectedChannel.id, messageId, { emoji });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Échec de la réaction");
+      throw err;
+    }
+  }, [selectedChannel]);
+
   const clearError = useCallback(() => setError(null), []);
 
   return (
     <MessageContext.Provider value={{
       messages, isLoading, error,
-      sendMessage, updateMessage, deleteMessage,
+      sendMessage, updateMessage, deleteMessage, toggleReaction,
       refreshMessages: () => loadMessages(),
       clearError,
     }}>
