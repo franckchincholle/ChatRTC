@@ -23,6 +23,7 @@
     "socket.io-client": "^4.6.0"
   },
   "devDependencies": {
+    "@types/electron": "^1.4.38",
     "@types/node": "^20.0.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",

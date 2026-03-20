@@ -4,7 +4,8 @@ import { parse } from "url";
 import next from "next";
 import path from "path";
 
-const isDev = process.env.NODE_ENV !== "production";
+// app.isPackaged est la façon fiable de détecter si on est dans un binaire
+const isDev = !app.isPackaged;
 const NEXT_PORT = 3005;
 
 let mainWindow: BrowserWindow | null = null;
@@ -14,7 +15,7 @@ let mainWindow: BrowserWindow | null = null;
 async function startNextServer(): Promise<void> {
   const nextApp = next({
     dev: false,
-    dir: path.join(process.resourcesPath, "app"),
+    dir: app.getAppPath(), // ← pointe vers la racine de l'app packagée
   });
 
   const handle = nextApp.getRequestHandler();
@@ -54,18 +55,17 @@ function createWindow(): void {
     mainWindow?.show();
   });
 
-  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+  mainWindow.webContents.setWindowOpenHandler(({ url }: { url: string }) => {
     if (url.startsWith("http")) {
       shell.openExternal(url);
-      return { action: "deny" };
+      return { action: "deny" as const };
     }
-    return { action: "allow" };
+    return { action: "allow" as const };
   });
 
-  // En dev : Next.js tourne déjà via "next dev -p 3005"
-  // En prod (binaire) : Next.js est démarré par startNextServer()
   mainWindow.loadURL(`http://localhost:${NEXT_PORT}`);
 
+  // DevTools uniquement en dev, jamais dans le binaire
   if (isDev) {
     mainWindow.webContents.openDevTools();
   }
@@ -78,7 +78,6 @@ function createWindow(): void {
 // ─── Cycle de vie ─────────────────────────────────────────────────────────────
 
 app.whenReady().then(async () => {
-  // En dev, Next.js est déjà lancé par concurrently → on ne le redémarre pas
   if (!isDev) {
     await startNextServer();
   }

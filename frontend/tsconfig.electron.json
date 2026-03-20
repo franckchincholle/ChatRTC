@@ -8,7 +8,8 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "type": ["node", "electron"]
   },
   "include": ["electron/**/*.ts"],
   "exclude": ["node_modules", "dist-electron", ".next"]
