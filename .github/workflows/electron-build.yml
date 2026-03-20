@@ -1,11 +1,9 @@
 name: Electron Build
 
 on:
-  # Linux + Windows : se déclenche automatiquement sur un tag v*
   push:
     tags:
       - "v*"
-  # Mac : se déclenche manuellement depuis l'interface GitHub
   workflow_dispatch:
     inputs:
       platform:
@@ -33,6 +31,10 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     name: Build ${{ matrix.name }}
+
+    # Permission nécessaire pour créer/modifier une Release
+    permissions:
+      contents: write
 
     defaults:
       run:
@@ -64,6 +66,18 @@ jobs:
             frontend/release/*.exe
           retention-days: 7
 
+      - name: Publish to GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            frontend/release/*.AppImage
+            frontend/release/*.exe
+          # draft: true → la release est créée mais pas publiée,
+          # tu dois aller la valider manuellement sur GitHub
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   # ─── Build Mac (sur demande manuelle) ───────────────────────────────────────
   build-mac:
     if: github.event_name == 'workflow_dispatch'
@@ -80,6 +94,9 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     name: Build ${{ matrix.name }}
+
+    permissions:
+      contents: write
 
     defaults:
       run:
@@ -110,3 +127,14 @@ jobs:
             frontend/release/*.dmg
             frontend/release/*.zip
           retention-days: 7
+
+      - name: Publish to GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            frontend/release/*.dmg
+            frontend/release/*.zip
+          draft: true
+          tag_name: ${{ github.ref_name || 'manual' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
