@@ -61,7 +61,6 @@ jobs:
           name: release-${{ matrix.name }}
           path: |
             frontend/release/*.AppImage
-            frontend/release/*.deb
             frontend/release/*.exe
           retention-days: 7
 
