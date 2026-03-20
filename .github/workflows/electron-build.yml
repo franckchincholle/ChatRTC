@@ -4,14 +4,14 @@ on:
   # Linux + Windows : se déclenche automatiquement sur un tag v*
   push:
     tags:
-      - 'v*'
+      - "v*"
   # Mac : se déclenche manuellement depuis l'interface GitHub
   workflow_dispatch:
     inputs:
       platform:
-        description: 'Plateforme Mac à builder'
+        description: "Plateforme Mac à builder"
         required: true
-        default: 'mac-arm64'
+        default: "mac-arm64"
         type: choice
         options:
           - mac-arm64
@@ -54,8 +54,6 @@ jobs:
 
       - name: Build Electron
         run: npm run electron:build
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -104,8 +102,6 @@ jobs:
 
       - name: Build Electron
         run: npm run electron:build
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4

@@ -1,6 +1,8 @@
 {
   "name": "frontend",
   "version": "0.1.0",
+  "description": "ChatRTC Desktop Application",
+  "author": "T-DEV-600",
   "private": true,
   "main": "dist-electron/main.js",
   "scripts": {
@@ -10,7 +12,7 @@
     "lint": "eslint .",
     "electron:compile": "tsc -p tsconfig.electron.json",
     "electron:dev": "concurrently \"next dev -p 3005\" \"npm run electron:compile && wait-on http://localhost:3005 && electron .\"",
-    "electron:build": "next build && npm run electron:compile && electron-builder"
+    "electron:build": "next build && npm run electron:compile && electron-builder --publish never"
   },
   "dependencies": {
     "@giphy/js-fetch-api": "^5.7.0",
